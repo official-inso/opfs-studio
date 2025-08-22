@@ -4,7 +4,6 @@ import App from "../panel/App";
 import "../panel/styles.css";
 import { useUI } from "../panel/store";
 
-// В DevTools есть целевой tabId → используем его напрямую
 const devtools = (
   chrome as unknown as { devtools?: { inspectedWindow?: { tabId: number } } }
 ).devtools;
@@ -12,7 +11,6 @@ const inspectedTabId = devtools?.inspectedWindow?.tabId ?? null;
 
 if (inspectedTabId != null) {
   useUI.getState().setTab(inspectedTabId);
-  // сразу запрашиваем список и запускаем watcher
   void useUI
     .getState()
     .send({ kind: "list", data: null })

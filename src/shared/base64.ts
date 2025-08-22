@@ -1,4 +1,3 @@
-// shared/base64.ts
 export function abToBase64(ab: ArrayBuffer): string {
   const u8 = new Uint8Array(ab);
   let bin = "";

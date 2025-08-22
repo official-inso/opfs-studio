@@ -41,7 +41,6 @@ export const TopBar: React.FC = () => {
           title="Обновить"
           className="h-6 w-6"
           onClick={() => {
-            //send({ kind: "list", data: null }).catch(() => void 0)
             window.location.reload();
           }}
         >

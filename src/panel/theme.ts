@@ -2,7 +2,6 @@ export function applySystemTheme(): void {
   const mq = window.matchMedia("(prefers-color-scheme: dark)");
   const set = (dark: boolean) => {
     document.documentElement.classList.toggle("dark", dark);
-    // Tailwind v4 darkMode: ['class'] уже настроен
   };
   set(mq.matches);
   mq.addEventListener("change", (e) => set(e.matches));

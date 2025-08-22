@@ -30,11 +30,9 @@ export const EditorPanel: React.FC = () => {
 
   const dirty = Boolean(path && buf !== (lastDisk[path!] ?? ""));
 
-  // если бинарный — читаем байты и строим blob url
   useEffect(() => {
     setBlobUrl(null);
     if (!path || textual) return;
-    // внутри useEffect, который срабатывает для бинарных типов:
     void (async () => {
       const resp = await send<{ ok: true; bytes: ArrayBuffer }>({
         kind: "read-bytes",
@@ -55,7 +53,6 @@ export const EditorPanel: React.FC = () => {
       const url = URL.createObjectURL(new Blob([resp.bytes], { type }));
       setBlobUrl(url);
     })();
-    // ответ прилетит в App? Нет, обработаем локально:
     chrome.runtime.onMessage.addListener(function onMsg(m) {
       if (m?.kind === "bytes-read" && m.data?.path === path) {
         const bytes: ArrayBuffer = m.data.bytes;
@@ -128,7 +125,6 @@ export const EditorPanel: React.FC = () => {
     );
   }
 
-  // бинарные типы
   if (isImage && blobUrl)
     return (
       <div className="h-full flex items-center justify-center bg-black">

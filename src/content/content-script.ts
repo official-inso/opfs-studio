@@ -190,7 +190,7 @@ chrome.runtime.onMessage.addListener(
           case "read-bytes": {
             const { path } = msg.data as { path: string };
             const bytes = await readBytes(path);
-            sendResponse({ ok: true, bytes }); // <-- ответом, не только постом
+            sendResponse({ ok: true, bytes });
             break;
           }
           case "rename-path": {

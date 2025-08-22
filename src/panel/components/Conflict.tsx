@@ -84,7 +84,7 @@ export const ConflictBanner: React.FC = () => {
             <DialogTitle>Слияние изменений</DialogTitle>
           </DialogHeader>
           <DiffEditor
-            right={toLF(conflict.diskContent)} // нормализуем LF
+            right={toLF(conflict.diskContent)}
             left={buffer}
             onApply={(merged) => {
               void handleMergeApply(merged);

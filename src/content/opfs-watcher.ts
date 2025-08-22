@@ -1,4 +1,3 @@
-// src/content/opfs-watcher.ts
 import type {
   OpfsFileMeta,
   OpfsSnapshot,
@@ -170,7 +169,6 @@ export async function writeText(
   const parent = await ensureParentDir(root, parts);
   const fh = await parent.getFileHandle(name, { create: createIfMissing });
 
-  // ВАЖНО: пишем как есть (без насильной нормализации EOL).
   const w = await fh.createWritable();
   await w.write(content);
   await w.close();
@@ -178,8 +176,6 @@ export async function writeText(
   const f = await fh.getFile();
   return { size: f.size, lastModified: f.lastModified };
 }
-
-// src/content/opfs-watcher.ts
 
 export async function writeBytes(
   path: string,
@@ -192,11 +188,9 @@ export async function writeBytes(
   const parent = await ensureParentDir(root, parts);
   const fh = await parent.getFileHandle(name, { create: createIfMissing });
 
-  // Нормализуем к Uint8Array
   const view: Uint8Array =
     data instanceof Uint8Array ? data : new Uint8Array(data);
 
-  // Гарантируем ИМЕННО ArrayBuffer (учитываем offset/length)
   const ab: ArrayBuffer =
     view.buffer instanceof ArrayBuffer &&
     view.byteOffset === 0 &&
@@ -211,8 +205,8 @@ export async function writeBytes(
           })();
 
   const w = await fh.createWritable();
-  await w.write(ab); // <-- FileSystemWriteChunkType OK
-  await w.truncate(ab.byteLength); // страховка от хвостов
+  await w.write(ab);
+  await w.truncate(ab.byteLength);
   await w.close();
 
   const f = await fh.getFile();

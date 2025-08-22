@@ -42,7 +42,6 @@ const DirRow: React.FC<{ depth: number; d: DirNode }> = ({ depth, d }) => {
         className="group flex items-center justify-between px-2 py-1 hover:bg-muted rounded-sm cursor-pointer"
         style={{ paddingLeft: depth * 12 }}
         onClick={(e) => {
-          // клики по action-иконкам справа игнорируем
           const target = e.target as HTMLElement;
           if (target.closest("[data-actions]")) return;
           toggleDir(d.path);

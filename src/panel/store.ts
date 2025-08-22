@@ -1,4 +1,3 @@
-// src/panel/store.ts
 import { create } from "zustand";
 import type {
   OpfsFileMeta,
@@ -45,10 +44,10 @@ export interface UIState {
   tree: FileTreeNode[];
   currentPath: string | null;
 
-  buffer: string; // текущий буфер (LF)
-  buffers: Record<string, string>; // все буферы (LF)
-  lastDisk: Record<string, string>; // «последний диск» (LF)
-  eolByPath: Record<string, EolStyle>; // исходный стиль переносов для каждого пути
+  buffer: string;
+  buffers: Record<string, string>;
+  lastDisk: Record<string, string>;
+  eolByPath: Record<string, EolStyle>;
 
   statusLine: string;
   tabId: number | null;
@@ -98,7 +97,6 @@ export interface UIState {
   send: <T = unknown>(msg: MsgToContent) => Promise<T>;
 }
 
-// ---------- helpers: paths & EOL ----------
 function pathParts(path: string): string[] {
   return path.split("/").filter(Boolean);
 }
@@ -106,9 +104,7 @@ function extOf(name: string): string {
   return (name.split(".").pop() ?? "").toLowerCase();
 }
 function detectEol(text: string): EolStyle {
-  // предпочитаем CRLF, если встречается хотя бы один CRLF
   if (/\r\n/.test(text)) return "crlf";
-  // одиночные \r (classic Mac) третим как lf для редактирования
   return "lf";
 }
 function toLF(text: string): string {
@@ -121,9 +117,8 @@ function fromLF(textLF: string, eol: EolStyle): string {
 type FileWithPath = File & { webkitRelativePath?: string | undefined };
 
 function normalizePath(input: string): string {
-  // заменяем бэкслеши, вычищаем ./ и лишние /
   const s = input.replace(/\\/g, "/").replace(/^\.\//, "");
-  return s.replace(/\/{2,}/g, "/").replace(/^\/+/, ""); // без лидирующего /
+  return s.replace(/\/{2,}/g, "/").replace(/^\/+/, "");
 }
 
 function pLimit(concurrency: number) {
@@ -152,7 +147,6 @@ function pLimit(concurrency: number) {
     });
 }
 
-// ---------- tree builders ----------
 function toTree(
   files: OpfsFileMeta[],
   keep?: Map<string, boolean>
@@ -237,7 +231,6 @@ function findFileNode(nodes: FileTreeNode[], path: string): FileNode | null {
   return null;
 }
 
-// файл текстовый?
 export function isTextual(ext: string): boolean {
   return [
     "ts",
@@ -260,7 +253,6 @@ export function isTextual(ext: string): boolean {
   ].includes(ext);
 }
 
-// ---------- store ----------
 export const useUI = create<UIState>((set, get) => ({
   files: [],
   tree: [],
@@ -286,9 +278,7 @@ export const useUI = create<UIState>((set, get) => ({
   toggleFormatOnOpen: () => set((s) => ({ formatOnOpen: !s.formatOnOpen })),
 
   applyDiskContent: (path, text) => {
-    // 1) фиксируем исходный стиль переносов
     const eol = detectEol(text);
-    // 2) храним в памяти LF-версию
     const textLF = toLF(text);
 
     const tree = get().tree;
@@ -310,7 +300,6 @@ export const useUI = create<UIState>((set, get) => ({
     const prev = get().openWatchdogId;
     if (prev != null) window.clearTimeout(prev);
     const id = window.setTimeout(() => {
-      // можно добавить мягкий фоллбек, сейчас оставляем no-op
     }, timeoutMs);
     set({ openInProgressFor: path, openWatchdogId: id });
   },
@@ -325,7 +314,6 @@ export const useUI = create<UIState>((set, get) => ({
 
   revertPath: (path) => {
     const last = get().lastDisk[path] ?? "";
-    // вернуть буфер к "версии с диска" и снять dirty
     get().setBufferForPath(path, last, false);
   },
 
@@ -390,10 +378,9 @@ export const useUI = create<UIState>((set, get) => ({
       currentPath: path,
       conflict: null,
       statusLine: `Открывается: ${path}`,
-      ...(typeof known === "string" ? { buffer: known } : {}), // мгновенно показать буфер
+      ...(typeof known === "string" ? { buffer: known } : {}),
     });
 
-    // всегда читаем свежий диск для eol/lastDisk, но watchdog не критичен
     void get()
       .send({ kind: "read-file", data: { path } })
       .catch(() => void 0);
@@ -440,7 +427,6 @@ export const useUI = create<UIState>((set, get) => ({
     set((s) => ({ eolByPath: { ...s.eolByPath, [path]: eol } }));
   },
 
-  // store.ts — замени реализацию markSaved целиком
   markSaved: (path) => {
     const tree = get().tree;
     const node = findFileNode(tree, path);
@@ -451,13 +437,12 @@ export const useUI = create<UIState>((set, get) => ({
     }
 
     const bufs = get().buffers;
-    const curr = bufs[path]; // может быть undefined, если файл ещё не открыт/не прочитан
+    const curr = bufs[path];
     const lastDiskPrev = get().lastDisk[path];
 
-    // обновляем lastDisk только если у нас есть актуальный буфер
     const nextLastDisk =
       typeof curr === "string"
-        ? curr.replace(/\r\n?/g, "\n") // храним LF в памяти
+        ? curr.replace(/\r\n?/g, "\n")
         : undefined;
 
     set({
@@ -465,7 +450,7 @@ export const useUI = create<UIState>((set, get) => ({
       lastDisk:
         nextLastDisk !== undefined
           ? { ...get().lastDisk, [path]: nextLastDisk }
-          : get().lastDisk, // иначе не трогаем!
+          : get().lastDisk,
       statusLine: `Сохранено: ${path}`,
       conflict: null,
     });
@@ -529,7 +514,7 @@ export const useUI = create<UIState>((set, get) => ({
           data: {
             path,
             dataB64: b64,
-            expectedSize: ab.byteLength, // ⬅️
+            expectedSize: ab.byteLength,
             createIfMissing: true,
           },
         });
@@ -557,13 +542,13 @@ export const useUI = create<UIState>((set, get) => ({
       lim(async () => {
         const rel = normalizePath(f.webkitRelativePath ?? f.name);
         const ab = await f.arrayBuffer();
-        const b64 = abToBase64(ab); // ⬅️ кодируем
+        const b64 = abToBase64(ab);
         await send({
           kind: "write-bytes",
           data: {
             path: rel,
             dataB64: b64,
-            expectedSize: ab.byteLength, // ⬅️
+            expectedSize: ab.byteLength,
             createIfMissing: true,
           },
         });
@@ -577,12 +562,10 @@ export const useUI = create<UIState>((set, get) => ({
     await send({ kind: "list", data: null });
   },
 
-  // Сохранение одного файла с преобразованием EOL к исходному стилю
   savePath: async (path) => {
     const bufs = get().buffers;
     const textLF = bufs[path];
     if (typeof textLF !== "string") {
-      // буфера ещё нет, безопаснее перечитать файл и не сохранять
       await get().send({ kind: "read-file", data: { path } });
       return;
     }
@@ -596,7 +579,6 @@ export const useUI = create<UIState>((set, get) => ({
     await get().send({ kind: "list", data: null });
   },
 
-  // Сохраняем все «dirty» и приводим переносы к исходному стилю для каждого файла
   saveAll: async () => {
     const dirty: string[] = [];
     const walk = (nodes: FileTreeNode[]) => {

@@ -74,23 +74,19 @@ export default function App(): JSX.Element {
       const state = useUI.getState();
       const { currentPath, awaitingConflictFor, buffers, lastDisk } = state;
 
-      // нормализуем в LF для корректного сравнения
       const toLF = (s: string): string => s.replace(/\r\n?/g, "\n");
       const diskLF = toLF(content);
       const currentBuf = buffers[path] ?? "";
       const lastDiskBuf = lastDisk[path] ?? "";
 
-      const hasLocalChanges = currentBuf !== lastDiskBuf; // локально есть правки?
-      const diskChanged = diskLF !== lastDiskBuf; // диск реально обновился относительно нашей базы?
+      const hasLocalChanges = currentBuf !== lastDiskBuf;
+      const diskChanged = diskLF !== lastDiskBuf;
 
-      // Конфликт возможен ТОЛЬКО если мы его ожидали (после watch "modified")
-      // И при этом есть локальные изменения И диск действительно изменился.
       if (awaitingConflictFor === path && hasLocalChanges && diskChanged) {
         state.setConflict({ path, diskContent: content });
         return;
       }
 
-      // Иначе просто применяем контент с диска (и обновляем lastDisk).
       state.applyDiskContent(path, content);
       state.setStatus(`Обновлено с диска: ${path}`);
       return;
@@ -161,9 +157,7 @@ export default function App(): JSX.Element {
 
   useEffect(() => {
     const resync = () => {
-      // всегда запрашиваем свежий snapshot
       void send({ kind: "list", data: null }).catch(() => void 0);
-      // если пользователь включал watch — убедимся, что он активен
       if (watching)
         void send({ kind: "start-watch", data: null }).catch(() => void 0);
     };

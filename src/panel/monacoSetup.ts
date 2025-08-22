@@ -6,7 +6,6 @@ import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker&url";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker&url";
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker&url";
 
-// языковые contribution'ы (важно для подсветки/фич)
 import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution";
 import "monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution";
 import "monaco-editor/esm/vs/language/typescript/monaco.contribution";

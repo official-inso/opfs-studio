@@ -7,7 +7,6 @@ export interface EditorProps {
   path: string | null;
   value: string;
   onChange: (next: string) => void;
-  /** Если true — при открытии/смене файла выполняется автоформат документа */
   formatOnOpen?: boolean;
 }
 
@@ -53,7 +52,6 @@ export const CodeEditor: React.FC<EditorProps> = ({
   const modelRef = useRef<monaco.editor.ITextModel | null>(null);
   const resizeObs = useRef<ResizeObserver | null>(null);
 
-  // mount once
   useEffect(() => {
     if (!hostRef.current) return;
 
@@ -67,7 +65,7 @@ export const CodeEditor: React.FC<EditorProps> = ({
     const editor = monaco.editor.create(hostRef.current, {
       model,
       theme: getTheme() === "dark" ? "vs-dark" : "vs-light",
-      automaticLayout: false, // используем свой ResizeObserver
+      automaticLayout: false,
       minimap: { enabled: true },
       wordWrap: "on",
       fontSize: 13,
@@ -87,13 +85,10 @@ export const CodeEditor: React.FC<EditorProps> = ({
       onChange(textForSave);
     });
 
-    // формат на старте (если разрешён и действие поддерживается)
     if (formatOnOpen) {
-      // даём кадр на инициализацию
       setTimeout(() => runFormat(editor), 0);
     }
 
-    // собственный observer с rAF, чтобы DevTools не ругался
     resizeObs.current = new ResizeObserver(() => {
       const ed = editorRef.current;
       if (!ed) return;
@@ -116,7 +111,6 @@ export const CodeEditor: React.FC<EditorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // external value update (без лишних курсор-скачков)
   useEffect(() => {
     const ed = editorRef.current;
     const model = ed?.getModel();
@@ -132,7 +126,6 @@ export const CodeEditor: React.FC<EditorProps> = ({
     }
   }, [value, path]);
 
-  // language & formatting on path change
   useEffect(() => {
     const ed = editorRef.current;
     const model = ed?.getModel();
@@ -140,7 +133,7 @@ export const CodeEditor: React.FC<EditorProps> = ({
 
     monaco.editor.setModelLanguage(model, langByPath(path));
 
-    model.setEOL(monaco.editor.EndOfLineSequence.LF); // или CRLF
+    model.setEOL(monaco.editor.EndOfLineSequence.LF);
 
     if (formatOnOpen) {
       setTimeout(() => runFormat(ed), 0);
