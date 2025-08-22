@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "OPFS Watcher + Monaco Editor",
+  "version": "1.0.0",
+  "description": "Следит за OPFS на странице и редактирует файлы через Monaco.",
+  "icons": {
+    "128": "public/icon128.png"
+  },
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "sidePanel",
+    "storage"
+  ],
+  "devtools_page": "src/devtools/devtools.html",
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open OPFS Panel"
+  },
+  "side_panel": {
+    "default_path": "src/panel/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "assets/content-script.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+import React from "react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  FileText,
+  Image as ImageIcon,
+  Music,
+  FileArchive,
+  File as FileIcon,
+} from "lucide-react";
+import {
+  useUI,
+  type FileTreeNode,
+  type FileNode,
+  type DirNode,
+} from "../store";
+import { RenameDialog } from "./Modals";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+function fileIcon(node: FileNode): JSX.Element {
+  const e = node.ext;
+  if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(e))
+    return <ImageIcon className="h-4 w-4 text-blue-500" />;
+  if (["mp3", "wav", "ogg"].includes(e))
+    return <Music className="h-4 w-4 text-purple-500" />;
+  if (["zip", "gz", "tgz", "rar", "7z"].includes(e))
+    return <FileArchive className="h-4 w-4 text-yellow-500" />;
+  if (
+    ["ts", "tsx", "js", "jsx", "json", "css", "md", "html", "txt", "xml", "yml", "yaml", "sql", "log", "csv"].includes(e)
+  )
+    return <FileText className="h-4 w-4 text-black/75 dark:text-white" />;
+  return <FileIcon className="h-4 w-4 text-gray-400" />;
+}
+
+const DirRow: React.FC<{ depth: number; d: DirNode }> = ({ depth, d }) => {
+  const toggleDir = useUI((s) => s.toggleDir);
+  return (
+    <>
+      <div
+        className="group flex items-center justify-between px-2 py-1 hover:bg-muted rounded-sm cursor-pointer"
+        style={{ paddingLeft: depth * 12 }}
+        onClick={(e) => {
+          // клики по action-иконкам справа игнорируем
+          const target = e.target as HTMLElement;
+          if (target.closest("[data-actions]")) return;
+          toggleDir(d.path);
+        }}
+      >
+        <div className="flex items-center gap-1">
+          {d.collapsed ? (
+            <ChevronRight className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+          <Folder className="h-4 w-4 text-yellow-400" />
+          <span className="ml-1">{d.name || "/"}</span>
+        </div>
+        <div
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          data-actions
+        >
+          <RenameDialog from={d.path} />
+        </div>
+      </div>
+      {!d.collapsed &&
+        d.children.map((ch) => <Row key={ch.id} depth={depth + 1} node={ch} />)}
+    </>
+  );
+};
+
+const FileRow: React.FC<{ depth: number; f: FileNode }> = ({ depth, f }) => {
+  const openFile = useUI((s) => s.openFile);
+  const currentPath = useUI((s) => s.currentPath);
+  const active = currentPath === f.path;
+  const info = `${(f.size / 1024).toFixed(1)} KB • ${new Date(
+    f.lastModified
+  ).toLocaleString()}`;
+
+  return (
+    <div
+      className={cn(
+        "group flex items-center gap-2 px-2 py-1 rounded-sm transition",
+        active ? "bg-muted" : "hover:bg-muted",
+        f.status === "modified-externally" && "flash-modified"
+      )}
+      style={{ paddingLeft: (depth + 1) * 12 }}
+      onClick={(e) => {
+        e.preventDefault();
+        openFile(f.path)
+      }}
+    >
+      {fileIcon(f)}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          openFile(f.path)
+        }}
+        className="text-left flex-1 truncate"
+        title={info}
+      >
+        <div className="text-sm leading-4">{f.name}</div>
+        <div className="text-[10px] text-muted-foreground leading-3">
+          {f.ext || "file"} • {info}
+        </div>
+      </button>
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+        <RenameDialog from={f.path} />
+      </div>
+    </div>
+  );
+};
+
+const Row: React.FC<{ depth: number; node: FileTreeNode }> = ({
+  depth,
+  node,
+}) =>
+  node.isDirectory ? (
+    <DirRow depth={depth} d={node as DirNode} />
+  ) : (
+    <FileRow depth={depth} f={node as FileNode} />
+  );
+
+export const FileTree: React.FC = () => {
+  const tree = useUI((s) => s.tree);
+  return (
+    <ScrollArea className="h-full">
+      <div className="p-1">
+        {tree.length === 0 ? (
+          <div className="text-xs text-muted-foreground px-2 py-1">
+            OPFS пуст
+          </div>
+        ) : (
+          tree.map((n) => <Row key={n.id} depth={0} node={n} />)
+        )}
+      </div>
+    </ScrollArea>
+  );
+};

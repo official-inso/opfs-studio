@@ -1,0 +1,209 @@
+import React, { useEffect } from "react";
+import type {
+  MsgFromContent,
+  OpfsSnapshot,
+  WatchEvent,
+} from "../shared/messaging";
+import { usePanelPort } from "./hooks/usePort";
+import { useUI } from "./store";
+import { FileTree } from "./components/FileTree";
+import { TopBar } from "./components/TopBar";
+import { EditorPanel } from "./components/EditorPanel";
+import { StatusBar } from "./components/StatusBar";
+import { toast, Toaster } from "sonner";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+
+const extOf = (p: string): string => (p.split(".").pop() ?? "").toLowerCase();
+const TEXTUAL_EXT = new Set([
+  "ts",
+  "tsx",
+  "js",
+  "jsx",
+  "json",
+  "css",
+  "md",
+  "markdown",
+  "html",
+  "txt",
+  "xml",
+  "yml",
+  "yaml",
+  "svg",
+  "csv",
+  "sql",
+  "log",
+]);
+
+export default function App(): JSX.Element {
+  const setTab = useUI((s) => s.setTab);
+  const setWatching = useUI((s) => s.setWatching);
+  const applySnapshot = useUI((s) => s.applySnapshot);
+  const applyWatchEvents = useUI((s) => s.applyWatchEvents);
+  const setStatus = useUI((s) => s.setStatus);
+  const setBufferForPath = useUI((s) => s.setBufferForPath);
+  const setConflict = useUI((s) => s.setConflict);
+  const awaitingConflictFor = useUI((s) => s.awaitingConflictFor);
+  const formatOnOpen = useUI((s) => s.formatOnOpen);
+  const send = useUI((s) => s.send);
+  const watching = useUI((s) => s.watching);
+  const stopOpenWatchdog = useUI((s) => s.stopOpenWatchdog);
+  const markSaved = useUI((s) => s.markSaved);
+
+  const onPanelMessage = async (raw: unknown): Promise<void> => {
+    const msg = raw as MsgFromContent;
+
+    if (msg.kind === "watch-status") {
+      setWatching((msg.data as { watching: boolean }).watching);
+      return;
+    }
+
+    if (msg.kind === "snapshot") {
+      applySnapshot(msg.data as OpfsSnapshot);
+      return;
+    }
+
+    if (msg.kind === "watch-events") {
+      applyWatchEvents(msg.data as WatchEvent[]);
+      return;
+    }
+
+    if (msg.kind === "file-read") {
+      stopOpenWatchdog();
+
+      const { path, content } = msg.data as { path: string; content: string };
+      const state = useUI.getState();
+      const { currentPath, awaitingConflictFor, buffers, lastDisk } = state;
+
+      // нормализуем в LF для корректного сравнения
+      const toLF = (s: string): string => s.replace(/\r\n?/g, "\n");
+      const diskLF = toLF(content);
+      const currentBuf = buffers[path] ?? "";
+      const lastDiskBuf = lastDisk[path] ?? "";
+
+      const hasLocalChanges = currentBuf !== lastDiskBuf; // локально есть правки?
+      const diskChanged = diskLF !== lastDiskBuf; // диск реально обновился относительно нашей базы?
+
+      // Конфликт возможен ТОЛЬКО если мы его ожидали (после watch "modified")
+      // И при этом есть локальные изменения И диск действительно изменился.
+      if (awaitingConflictFor === path && hasLocalChanges && diskChanged) {
+        state.setConflict({ path, diskContent: content });
+        return;
+      }
+
+      // Иначе просто применяем контент с диска (и обновляем lastDisk).
+      state.applyDiskContent(path, content);
+      state.setStatus(`Обновлено с диска: ${path}`);
+      return;
+    }
+
+    if (msg.kind === "bytes-read") {
+      stopOpenWatchdog();
+      // не используется напрямую здесь
+      return;
+    }
+
+    if (msg.kind === "write-result") {
+      const { path } = msg.data as { path: string };
+      const st = useUI.getState();
+      const hasBuf = Object.prototype.hasOwnProperty.call(st.buffers, path);
+      const isTextual = TEXTUAL_EXT.has(extOf(path));
+      if (hasBuf && isTextual) {
+        st.markSaved(path);
+      }
+      toast.success(`Сохранено: ${path}`);
+      return;
+    }
+
+    if (msg.kind === "create-result") {
+      toast.success(`Создано: ${(msg.data as { path: string }).path}`);
+      return;
+    }
+
+    if (msg.kind === "rename-result") {
+      const { from, to } = msg.data as { from: string; to: string };
+      toast.success(`Переименовано: ${from} → ${to}`);
+      return;
+    }
+
+    if (msg.kind === "ready") {
+      setStatus("Контент-скрипты готовы");
+      setTab(null);
+      return;
+    }
+
+    if (msg.kind === "error") {
+      stopOpenWatchdog();
+      toast.error((msg.data as { message: string }).message);
+      return;
+    }
+  };
+
+  usePanelPort((m) => {
+    void onPanelMessage(m);
+  });
+
+  useEffect(() => {
+    const devtoolsTabId =
+      (
+        chrome as unknown as {
+          devtools?: { inspectedWindow?: { tabId: number } };
+        }
+      ).devtools?.inspectedWindow?.tabId ?? null;
+    if (devtoolsTabId != null) {
+      setTab(devtoolsTabId);
+      return;
+    }
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const t = tabs[0];
+      if (t?.id != null) setTab(t.id);
+    });
+  }, [setTab]);
+
+  useEffect(() => {
+    const resync = () => {
+      // всегда запрашиваем свежий snapshot
+      void send({ kind: "list", data: null }).catch(() => void 0);
+      // если пользователь включал watch — убедимся, что он активен
+      if (watching)
+        void send({ kind: "start-watch", data: null }).catch(() => void 0);
+    };
+
+    const onFocus = () => resync();
+    const onVis = () => {
+      if (document.visibilityState === "visible") resync();
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [send, watching]);
+
+  return (
+    <div className="flex flex-col h-screen bg-background text-foreground">
+      <TopBar />
+      <div className="flex flex-1 min-h-0">
+        <ResizablePanelGroup direction="horizontal">
+          <ResizablePanel minSize={20}>
+            <aside className="h-full">
+              <div className="h-8 px-2 border-b text-xs flex items-center">
+                Дерево OPFS
+              </div>
+              <FileTree />
+            </aside>
+          </ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel minSize={20} defaultSize={100}>
+            <main className="h-full flex-1 min-h-0">
+              <EditorPanel />
+            </main>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+      <StatusBar />
+      <Toaster position="bottom-right" richColors />
+    </div>
+  );
+}
