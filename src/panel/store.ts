@@ -264,7 +264,7 @@ export const useUI = create<UIState>((set, get) => ({
   buffer: "",
   buffers: {},
 
-  statusLine: "Готово",
+  statusLine: "Success",
   tabId: null,
   watching: true,
   conflict: null,
@@ -325,7 +325,7 @@ export const useUI = create<UIState>((set, get) => ({
     set({
       files: snap.files,
       tree,
-      statusLine: `Файлов: ${snap.files.filter((f) => !f.isDirectory).length}`,
+      statusLine: `Files: ${snap.files.filter((f) => !f.isDirectory).length}`,
     });
   },
 
@@ -451,7 +451,7 @@ export const useUI = create<UIState>((set, get) => ({
         nextLastDisk !== undefined
           ? { ...get().lastDisk, [path]: nextLastDisk }
           : get().lastDisk,
-      statusLine: `Сохранено: ${path}`,
+      statusLine: `Saved: ${path}`,
       conflict: null,
     });
   },
@@ -502,7 +502,7 @@ export const useUI = create<UIState>((set, get) => ({
     const list: File[] = Array.from(files);
     let done = 0;
     const total = list.length;
-    const id = toast.loading(`Загрузка файлов… 0/${total}`);
+    const id = toast.loading(`Uploading files… 0/${total}`);
 
     const tasks = list.map((f) =>
       lim(async () => {
@@ -519,7 +519,7 @@ export const useUI = create<UIState>((set, get) => ({
           },
         });
         done++;
-        toast.loading(`Загрузка файлов… ${done}/${total}`, { id });
+        toast.loading(`Uploading files… ${done}/${total}`, { id });
       })
     );
 
@@ -536,7 +536,7 @@ export const useUI = create<UIState>((set, get) => ({
     })[];
     let done = 0;
     const total = list.length;
-    const id = toast.loading(`Загрузка папки… 0/${total}`);
+    const id = toast.loading(`Uploading the folder… 0/${total}`);
 
     const tasks = list.map((f) =>
       lim(async () => {
@@ -553,7 +553,7 @@ export const useUI = create<UIState>((set, get) => ({
           },
         });
         done++;
-        toast.loading(`Загрузка папки… ${done}/${total}`, { id });
+        toast.loading(`Uploading the folder… ${done}/${total}`, { id });
       })
     );
 
@@ -607,7 +607,7 @@ export const useUI = create<UIState>((set, get) => ({
     new Promise<T>((resolve, reject) => {
       const tabId = get().tabId;
       if (tabId == null) {
-        reject(new Error("Нет активной вкладки"));
+        reject(new Error("Tab not found"));
         return;
       }
       chrome.tabs.sendMessage(tabId, msg, (response) => {

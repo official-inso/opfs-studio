@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import type {
   MsgFromContent,
   OpfsSnapshot,
@@ -12,6 +12,9 @@ import { EditorPanel } from "./components/EditorPanel";
 import { StatusBar } from "./components/StatusBar";
 import { toast, Toaster } from "sonner";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { setupI18n } from "@/i18n";
+import { I18nextProvider, useTranslation } from "react-i18next";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const extOf = (p: string): string => (p.split(".").pop() ?? "").toLowerCase();
 const TEXTUAL_EXT = new Set([
@@ -34,26 +37,42 @@ const TEXTUAL_EXT = new Set([
   "log",
 ]);
 
-export default function App(): JSX.Element {
+export default function App() {
+  
+  const [i18n, setI18n] = useState<any>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setupI18n().then((inst) => {
+      setI18n(inst);
+      setReady(true);
+    });
+  }, []);
+
+  if (!ready) return null;
+
+  return (
+    <I18nextProvider i18n={i18n}>
+      <AppContent />
+    </I18nextProvider>
+  );
+}
+
+
+function AppContent() {
+
   const setTab = useUI((s) => s.setTab);
   const setWatching = useUI((s) => s.setWatching);
   const applySnapshot = useUI((s) => s.applySnapshot);
   const applyWatchEvents = useUI((s) => s.applyWatchEvents);
   const setStatus = useUI((s) => s.setStatus);
-  const setBufferForPath = useUI((s) => s.setBufferForPath);
-  const setConflict = useUI((s) => s.setConflict);
-  const awaitingConflictFor = useUI((s) => s.awaitingConflictFor);
-  const formatOnOpen = useUI((s) => s.formatOnOpen);
   const send = useUI((s) => s.send);
   const watching = useUI((s) => s.watching);
   const stopOpenWatchdog = useUI((s) => s.stopOpenWatchdog);
-  const markSaved = useUI((s) => s.markSaved);
-
+  const { t } = useTranslation();
 
   const onPanelMessage = async (raw: unknown): Promise<void> => {
     const msg = raw as MsgFromContent;
-
-    console.log("msg", msg);
 
     if (msg.kind === "watch-status") {
       setWatching((msg.data as { watching: boolean }).watching);
@@ -75,7 +94,7 @@ export default function App(): JSX.Element {
 
       const { path, content } = msg.data as { path: string; content: string };
       const state = useUI.getState();
-      const { currentPath, awaitingConflictFor, buffers, lastDisk } = state;
+      const { awaitingConflictFor, buffers, lastDisk } = state;
 
       const toLF = (s: string): string => s.replace(/\r\n?/g, "\n");
       const diskLF = toLF(content);
@@ -91,13 +110,12 @@ export default function App(): JSX.Element {
       }
 
       state.applyDiskContent(path, content);
-      state.setStatus(`Обновлено с диска: ${path}`);
+      state.setStatus(`${t("panel.updatedFromDisk")}: ${path}`);
       return;
     }
 
     if (msg.kind === "bytes-read") {
       stopOpenWatchdog();
-      // не используется напрямую здесь
       return;
     }
 
@@ -109,27 +127,29 @@ export default function App(): JSX.Element {
       if (hasBuf && isTextual) {
         st.markSaved(path);
       }
-      toast.success(`Сохранено: ${path}`);
+      toast.success(`${t("panel.saved")}: ${path}`);
       return;
     }
 
     if (msg.kind === "create-result") {
-      toast.success(`Создано: ${(msg.data as { path: string }).path}`);
+      toast.success(
+        `${t("panel.created")}: ${(msg.data as { path: string }).path}`
+      );
       return;
     }
 
     if (msg.kind === "rename-result") {
       const { from, to } = msg.data as { from: string; to: string };
-      toast.success(`Переименовано: ${from} → ${to}`);
+      toast.success(`${t("panel.renamed")}: ${from} → ${to}`);
       return;
     }
 
     if (msg.kind === "ready") {
-      setStatus("Контент-скрипты готовы");
+      setStatus(t("panel.ready"));
       setTab(null);
       setTimeout(() => {
         window.location.reload();
-      }, 100)
+      }, 100);
       return;
     }
 
@@ -174,28 +194,30 @@ export default function App(): JSX.Element {
   }, [send, watching]);
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground">
-      <TopBar />
-      <div className="flex flex-1 min-h-0">
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel minSize={20}>
-            <aside className="h-full">
-              <div className="h-8 px-2 border-b text-xs flex items-center">
-                Дерево OPFS
-              </div>
-              <FileTree />
-            </aside>
-          </ResizablePanel>
-          <ResizableHandle />
-          <ResizablePanel minSize={20} defaultSize={100}>
-            <main className="h-full flex-1 min-h-0">
-              <EditorPanel />
-            </main>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+    <TooltipProvider>
+      <div className="flex flex-col h-screen bg-background text-foreground">
+        <TopBar />
+        <div className="flex flex-1 min-h-0">
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel minSize={20}>
+              <aside className="h-full">
+                <div className="h-8 px-2 border-b text-xs flex items-center">
+                  {t("panel.tree")}
+                </div>
+                <FileTree />
+              </aside>
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel minSize={20} defaultSize={100}>
+              <main className="h-full flex-1 min-h-0">
+                <EditorPanel />
+              </main>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+        <StatusBar />
+        <Toaster position="bottom-right" richColors />
       </div>
-      <StatusBar />
-      <Toaster position="bottom-right" richColors />
-    </div>
+    </TooltipProvider>
   );
 }

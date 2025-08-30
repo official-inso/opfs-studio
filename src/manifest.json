@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "OPFS Watcher + Monaco Editor",
+  "name": "OPFS Studio Extension",
   "version": "1.0.0",
-  "description": "Следит за OPFS на странице и редактирует файлы через Monaco.",
+  "description": "Following OPFS on the page and edits files via Monaco.",
   "icons": {
     "128": "public/icon128.png"
   },
@@ -40,7 +40,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "assets/*"
+        "assets/*",
+        "locales/en/common.json",
+        "locales/ru/common.json"
       ],
       "matches": [
         "<all_urls>"

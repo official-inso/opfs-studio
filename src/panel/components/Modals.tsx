@@ -5,34 +5,44 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next";
+
 
 export const CreateFileDialog: React.FC = () => {
   const createFile = useUI((s) => s.createFile);
   const [open, setOpen] = useState<boolean>(false);
   const [path, setPath] = useState<string>("new-file.txt");
+  const { t } = useTranslation();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="secondary"
-          size="icon"
-          title="Создать файл"
-          className="h-6 w-6"
-        >
-          <FilePlus className="!h-3 !w-3" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="secondary"
+              size="icon"
+              className="h-6 w-6"
+            >
+              <FilePlus className="!h-3 !w-3" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t("topbar.createFile")}</p>
+          </TooltipContent>
+        </Tooltip>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Создать файл</DialogTitle>
+          <DialogTitle>{t("modals.Createafile")}</DialogTitle>
           <DialogDescription>
-            Укажи путь относительно корня OPFS (например,{" "}
+            {t("modals.IndicatethepathregardingtherootofOPFSforexample")}{" "}
             <code>notes/todo.md</code>).
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
-          <Label htmlFor="file-path">Путь</Label>
+          <Label htmlFor="file-path">{t("modals.Path")}</Label>
           <Input
             id="file-path"
             value={path}
@@ -42,7 +52,7 @@ export const CreateFileDialog: React.FC = () => {
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Отмена</Button>
+            <Button variant="ghost">{t("modals.Cancellationlation")}</Button>
           </DialogClose>
           <Button
             onClick={() => {
@@ -50,7 +60,7 @@ export const CreateFileDialog: React.FC = () => {
             }}
             disabled={path.trim().length === 0}
           >
-            Создать
+            {t("modals.Create")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -62,29 +72,35 @@ export const CreateDirDialog: React.FC = () => {
   const createDir = useUI((s) => s.createDir);
   const [open, setOpen] = useState<boolean>(false);
   const [path, setPath] = useState<string>("new-folder");
+  const { t } = useTranslation();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="secondary"
-          size="icon"
-          title="Создать папку"
-          className="h-6 w-6"
-        >
-          <FolderPlus className="!h-3 !w-3" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="secondary"
+              size="icon"
+              className="h-6 w-6"
+            >
+              <FolderPlus className="!h-3 !w-3" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t("topbar.createFolder")}</p>
+          </TooltipContent>
+        </Tooltip>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Создать папку</DialogTitle>
+          <DialogTitle>{t("modals.Createafolder")}</DialogTitle>
           <DialogDescription>
-            Можно вложенный путь: <code>a/b/c</code> — будет создана вся
-            цепочка.
+            {t("modals.Youcanbeinvested")}: <code>a/b/c</code> — {t("modals.thewholechainwillbecreated")}.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
-          <Label htmlFor="dir-path">Путь</Label>
+          <Label htmlFor="dir-path">{t("modals.Path")}</Label>
           <Input
             id="dir-path"
             value={path}
@@ -94,7 +110,7 @@ export const CreateDirDialog: React.FC = () => {
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Отмена</Button>
+            <Button variant="ghost">{t("modals.Cancellation")}</Button>
           </DialogClose>
           <Button
             onClick={() => {
@@ -102,7 +118,7 @@ export const CreateDirDialog: React.FC = () => {
             }}
             disabled={path.trim().length === 0}
           >
-            Создать
+            {t("modals.Create")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -117,6 +133,7 @@ export const RenameDialog: React.FC<{ from: string; onDone?: () => void }> = ({
   const rename = useUI((s) => s.renamePath);
   const [open, setOpen] = useState<boolean>(false);
   const [to, setTo] = useState<string>(from);
+  const { t } = useTranslation();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -127,20 +144,20 @@ export const RenameDialog: React.FC<{ from: string; onDone?: () => void }> = ({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Переименовать</DialogTitle>
+          <DialogTitle>{t("modals.Rename")}</DialogTitle>
           <DialogDescription>
-            Можно менять имя и путь (перемещение).
+            {t("modals.Youcanchangethenameandpathmovement")}.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
-          <Label htmlFor="from">От</Label>
+          <Label htmlFor="from">{t("modals.From")}</Label>
           <Input id="from" value={from} readOnly />
-          <Label htmlFor="to">К</Label>
+          <Label htmlFor="to">{t("modals.TO")}</Label>
           <Input id="to" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Отмена</Button>
+            <Button variant="ghost">{t("modals.Cancellation")}</Button>
           </DialogClose>
           <Button
             onClick={() => {
@@ -151,7 +168,7 @@ export const RenameDialog: React.FC<{ from: string; onDone?: () => void }> = ({
             }}
             disabled={to.trim().length === 0 || to === from}
           >
-            Переименовать
+            {t("modals.Rename")}
           </Button>
         </DialogFooter>
       </DialogContent>
