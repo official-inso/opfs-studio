@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import type {
   MsgFromContent,
   OpfsSnapshot,
@@ -49,8 +49,11 @@ export default function App(): JSX.Element {
   const stopOpenWatchdog = useUI((s) => s.stopOpenWatchdog);
   const markSaved = useUI((s) => s.markSaved);
 
+
   const onPanelMessage = async (raw: unknown): Promise<void> => {
     const msg = raw as MsgFromContent;
+
+    console.log("msg", msg);
 
     if (msg.kind === "watch-status") {
       setWatching((msg.data as { watching: boolean }).watching);
@@ -124,6 +127,9 @@ export default function App(): JSX.Element {
     if (msg.kind === "ready") {
       setStatus("Контент-скрипты готовы");
       setTab(null);
+      setTimeout(() => {
+        window.location.reload();
+      }, 100)
       return;
     }
 
@@ -161,18 +167,10 @@ export default function App(): JSX.Element {
       if (watching)
         void send({ kind: "start-watch", data: null }).catch(() => void 0);
     };
-
-    const onFocus = () => resync();
-    const onVis = () => {
+    window.addEventListener("focus", resync);
+    document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") resync();
-    };
-
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onVis);
-    return () => {
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onVis);
-    };
+    });
   }, [send, watching]);
 
   return (

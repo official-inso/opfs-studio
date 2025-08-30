@@ -10,6 +10,22 @@ chrome.runtime.onConnect.addListener((port) => {
   }
 });
 
+// Если вкладка перезагрузилась — уведомляем соответствующую панель
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === "complete") {
+    for (const p of panelPorts) {
+      // p.sender?.tab?.id есть у side panel и devtools панели
+      if (p.sender?.tab?.id === tabId) {
+        try {
+          p.postMessage({ type: "tab:reloaded", tabId });
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }
+});
+
 function broadcast(msg: MsgFromContent): void {
   for (const p of panelPorts) {
     try {
