@@ -40,7 +40,7 @@ export function LanguageSwitcher() {
 
   return (
     <Select onValueChange={onChange} defaultValue={i18n.language}>
-      <SelectTrigger className="!h-6 p-0 px-2 hover:bg-secondary/80 bg-transparent rounded-md border-none">
+      <SelectTrigger className="!h-6 p-0 px-2 hover:bg-secondary/80 bg-transparent dark:bg-transparent rounded-md border-none">
         <Flag lng={i18n.language} />
       </SelectTrigger>
       <SelectContent>
