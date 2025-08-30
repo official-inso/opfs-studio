@@ -15,6 +15,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { setupI18n } from "@/i18n";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { trackPage } from "@/analytics";
 
 const extOf = (p: string): string => (p.split(".").pop() ?? "").toLowerCase();
 const TEXTUAL_EXT = new Set([
@@ -41,6 +42,10 @@ export default function App() {
   
   const [i18n, setI18n] = useState<any>(null);
   const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    trackPage("loaded panel");
+  }, []);
 
   useEffect(() => {
     setupI18n().then((inst) => {

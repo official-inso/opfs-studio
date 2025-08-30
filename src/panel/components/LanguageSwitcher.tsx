@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { trackEvent } from "@/analytics";
 
 export function Flag({ lng }: { lng: string }) {
   return (
@@ -36,6 +37,9 @@ export function LanguageSwitcher() {
 
   const onChange = async (lng: string) => {
     await i18n.changeLanguage(lng);
+    trackEvent("language_switch", {
+      language: lng,
+    });
   };
 
   return (

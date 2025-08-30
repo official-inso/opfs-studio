@@ -22,6 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { trackEvent } from "@/analytics";
 
 export const TopBar: React.FC = () => {
   const send = useUI((s) => s.send);
@@ -52,6 +53,7 @@ export const TopBar: React.FC = () => {
               className="h-6 w-6"
               onClick={() => {
                 window.location.reload();
+                trackEvent("refresh");
               }}
             >
               <RefreshCcw className="!h-3 !w-3" />
@@ -76,6 +78,7 @@ export const TopBar: React.FC = () => {
               onClick={() => {
                 setWatching(true);
                 void send({ kind: "start-watch", data: null });
+                trackEvent("startWatch");
               }}
             >
               <Play className="!h-3 !w-3" />
@@ -100,6 +103,7 @@ export const TopBar: React.FC = () => {
               onClick={() => {
                 setWatching(false);
                 void send({ kind: "stop-watch", data: null });
+                trackEvent("stopWatch");
               }}
             >
               <Square className="!h-3 !w-3" />
@@ -121,6 +125,7 @@ export const TopBar: React.FC = () => {
           onChange={(e) => {
             if (e.target.files) void uploadFiles(e.target.files);
             e.currentTarget.value = "";
+            trackEvent("uploadFiles");
           }}
         />
         <Tooltip>
@@ -129,7 +134,10 @@ export const TopBar: React.FC = () => {
               variant="secondary"
               size="icon"
               className="h-6 w-6"
-              onClick={() => filesInput.current?.click()}
+              onClick={() => {
+                filesInput.current?.click()
+               
+              }}
             >
               <Upload className="!h-3 !w-3" />
             </Button>
@@ -148,6 +156,7 @@ export const TopBar: React.FC = () => {
           onChange={(e) => {
             if (e.target.files) void uploadFolder(e.target.files);
             e.currentTarget.value = "";
+            trackEvent("uploadFolder");
           }}
         />
 
@@ -175,7 +184,12 @@ export const TopBar: React.FC = () => {
               variant="secondary"
               size="icon"
               className="h-6 w-6"
-              onClick={() => setTheme(getTheme() === "dark" ? "light" : "dark")}
+              onClick={() => {
+                setTheme(getTheme() === "dark" ? "light" : "dark");
+                trackEvent("changeTheme", {
+                  theme: getTheme() === "dark" ? "light" : "dark",
+                });
+              }}
             >
               <Palette className="!h-3 !w-3" />
             </Button>
@@ -206,9 +220,10 @@ export const TopBar: React.FC = () => {
             variant="secondary"
             className="h-6 px-2 text-[12px]"
             onClick={() =>
-              void saveAll().then(() =>
+              void saveAll().then(() => {
                 toast.success(t("topbar.saveAllSuccess"))
-              )
+                trackEvent("saveAll");
+              })
             }
           >
             {t("topbar.saveAll")}
@@ -230,6 +245,7 @@ export const TopBar: React.FC = () => {
               }).then(() => {
                 markSaved(currentPath);
                 toast.success(`${t("topbar.saveSuccess")}: ${currentPath}`);
+                trackEvent("save");
               });
             }}
           >

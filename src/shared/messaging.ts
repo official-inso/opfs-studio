@@ -28,7 +28,8 @@ export interface MsgFromContent {
     | "write-result"
     | "create-result"
     | "rename-result"
-    | "error";
+    | "error"
+    | "open-panel";
   data:
     | null
     | { watching: boolean }

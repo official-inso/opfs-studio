@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
+import { trackEvent } from "@/analytics";
 
 
 export const CreateFileDialog: React.FC = () => {
@@ -18,20 +19,17 @@ export const CreateFileDialog: React.FC = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Tooltip>
+        {/* <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="secondary"
-              size="icon"
-              className="h-6 w-6"
-            >
-              <FilePlus className="!h-3 !w-3" />
-            </Button>
+            
           </TooltipTrigger>
           <TooltipContent>
             <p>{t("topbar.createFile")}</p>
           </TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
+        <Button variant="secondary" size="icon" className="h-6 w-6">
+          <FilePlus className="!h-3 !w-3" />
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -57,6 +55,9 @@ export const CreateFileDialog: React.FC = () => {
           <Button
             onClick={() => {
               void createFile(path).then(() => setOpen(false));
+              trackEvent("created_file", {
+                path
+              });
             }}
             disabled={path.trim().length === 0}
           >
@@ -77,26 +78,24 @@ export const CreateDirDialog: React.FC = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Tooltip>
+        {/* <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="secondary"
-              size="icon"
-              className="h-6 w-6"
-            >
-              <FolderPlus className="!h-3 !w-3" />
-            </Button>
+            
           </TooltipTrigger>
           <TooltipContent>
             <p>{t("topbar.createFolder")}</p>
           </TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
+        <Button variant="secondary" size="icon" className="h-6 w-6">
+          <FolderPlus className="!h-3 !w-3" />
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("modals.Createafolder")}</DialogTitle>
           <DialogDescription>
-            {t("modals.Youcanbeinvested")}: <code>a/b/c</code> — {t("modals.thewholechainwillbecreated")}.
+            {t("modals.Youcanbeinvested")}: <code>a/b/c</code> —{" "}
+            {t("modals.thewholechainwillbecreated")}.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
@@ -115,6 +114,9 @@ export const CreateDirDialog: React.FC = () => {
           <Button
             onClick={() => {
               void createDir(path).then(() => setOpen(false));
+              trackEvent("created_folder", {
+                path
+              });
             }}
             disabled={path.trim().length === 0}
           >
@@ -164,6 +166,11 @@ export const RenameDialog: React.FC<{ from: string; onDone?: () => void }> = ({
               void rename(from, to).then(() => {
                 setOpen(false);
                 onDone?.();
+              });
+
+              trackEvent("renamed", {
+                from,
+                to
               });
             }}
             disabled={to.trim().length === 0 || to === from}

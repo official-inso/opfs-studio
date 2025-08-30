@@ -1,4 +1,5 @@
 import type { MsgFromContent } from "../shared/messaging";
+import { trackPage, trackEvent } from "@/analytics";
 
 // ретрансляция событий всем панелям
 const panelPorts = new Set<chrome.runtime.Port>();
@@ -8,6 +9,10 @@ chrome.runtime.onConnect.addListener((port) => {
     panelPorts.add(port);
     port.onDisconnect.addListener(() => panelPorts.delete(port));
   }
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+  trackPage("extension_installed");
 });
 
 // Если вкладка перезагрузилась — уведомляем соответствующую панель
@@ -37,6 +42,11 @@ function broadcast(msg: MsgFromContent): void {
 }
 
 chrome.runtime.onMessage.addListener((msg: MsgFromContent, sender) => {
+  if (msg.kind === "open-panel") {
+    trackPage("panel_opened");
+    console.log("open panel");
+  }
+
   if (sender.tab?.id != null) {
     broadcast(msg);
   }
