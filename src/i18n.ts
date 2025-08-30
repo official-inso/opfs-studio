@@ -47,7 +47,15 @@ function ruPlural(key: string, count?: number) {
 export async function setupI18n(): Promise<typeof i18n> {
   const stored = await getStoredLang();
   const detected = stored ?? navigator.language ?? "en";
-  const initial = detected.startsWith("ru") ? "ru" : "en";
+
+  // определяем язык
+  let initial: string = "en"; // по умолчанию английский
+  if (detected.startsWith("ru")) initial = "ru";
+  else if (detected.startsWith("fr")) initial = "fr";
+  else if (detected.startsWith("de")) initial = "de";
+  else if (detected.startsWith("es")) initial = "es";
+  else if (detected.startsWith("zh")) initial = "zh-CN";
+  else if (detected.startsWith("ja")) initial = "ja";
 
   // Загружаем ресурсы первого языка
   const initialRes = await loadLocale(initial);
@@ -67,14 +75,13 @@ export async function setupI18n(): Promise<typeof i18n> {
         escapeValue: false,
       },
       detection: {
-        // detection плагин, но свой stored язык главнее
         order: ["querystring", "navigator"],
         caches: [], // мы сами кешируем в chrome.storage
       },
       returnObjects: false,
     });
 
-  // Патч pluralization для ru (опционально)
+  // Патч pluralization для ru
   if (initial === "ru") {
     i18n.services.formatter?.add("ruPlural", (val, lng, opts) => {
       const k = String(opts?.key ?? "");
@@ -82,7 +89,7 @@ export async function setupI18n(): Promise<typeof i18n> {
     });
   }
 
-  // Динамический лоад других языков
+  // Динамическая подгрузка языков
   async function ensureLng(lng: string) {
     if (!i18n.hasResourceBundle(lng, "common")) {
       const res = await loadLocale(lng);
@@ -90,10 +97,25 @@ export async function setupI18n(): Promise<typeof i18n> {
     }
   }
 
-  // Переопределяем changeLanguage, чтобы подгружать JSON и сохранять выбор
+  // Переопределяем changeLanguage
   const origChange = i18n.changeLanguage.bind(i18n);
   i18n.changeLanguage = (async (lng?: string) => {
-    const next = (lng ?? "en").startsWith("ru") ? "ru" : "en";
+    let next: string = "en";
+    if (!lng) {
+      next = "en";
+    } else if (lng.startsWith("ru")) {
+      next = "ru";
+    } else if (lng.startsWith("fr")) {
+      next = "fr";
+    } else if (lng.startsWith("de")) {
+      next = "de";
+    } else if (lng.startsWith("es")) {
+      next = "es";
+    } else if (lng.startsWith("zh")) {
+      next = "zh-CN";
+    } else if (lng.startsWith("ja")) {
+      next = "ja";
+    }
     await ensureLng(next);
     await setStoredLang(next);
     return origChange(next);

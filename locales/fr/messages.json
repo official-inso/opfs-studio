@@ -1,0 +1,55 @@
+{
+  "language": "Langue",
+  "topbar": {
+    "refresh": "Rafraîchir",
+    "startWatch": "Commencer la surveillance",
+    "stopWatch": "Arrêter la surveillance",
+    "createFile": "Créer un fichier",
+    "createFolder": "Créer un dossier",
+    "uploadFiles": "Téléverser des fichiers",
+    "uploadFolder": "Téléverser un dossier",
+    "changeTheme": "Changer de thème",
+    "saveAll": "Tout enregistrer",
+    "saveAllSuccess": "Toutes les modifications ont été enregistrées",
+    "saveSuccess": "Enregistré",
+    "save": "Enregistrer"
+  },
+  "panel": {
+    "tree": "Arborescence OPFS",
+    "updatedFromDisk": "Mis à jour depuis le disque",
+    "saved": "Enregistré",
+    "created": "Créé",
+    "renamed": "Renommé",
+    "ready": "Scripts de contenu prêts",
+    "OPFSempty": "OPFS est vide"
+  },
+  "conflict": {
+    "Thefileischangedoutside": "Le fichier a été modifié à l’extérieur",
+    "Smerdzhit": "Fusionner",
+    "Replacethecontentsofthedisk": "Remplacer par le contenu du disque",
+    "Leavemyedits": "Conserver mes modifications",
+    "Mergingchanges": "Fusion des modifications",
+    "Applyunited": "Appliquer la fusion"
+  },
+  "editor": {
+    "Selectthefile": "Sélectionnez un fichier",
+    "Rollupdisruptededitstothelatestversionfromthedisk": "Annuler les modifications non enregistrées et revenir à la dernière version du disque",
+    "Rollowchanges": "Annuler les modifications",
+    "Thistypeisnotyetsupportedforapreexamination": "Ce type de fichier n’est pas encore pris en charge pour l’aperçu."
+  },
+  "modals": {
+    "Createafile": "Créer un fichier",
+    "IndicatethepathregardingtherootofOPFSforexample": "Indiquez un chemin relatif à la racine d’OPFS (par ex.,",
+    "Cancellationlation": "Annuler",
+    "Createafolder": "Créer un dossier",
+    "Youcanbeinvested": "Vous pouvez indiquer un chemin imbriqué",
+    "thewholechainwillbecreated": "toute la chaîne de dossiers sera créée",
+    "Path": "Chemin",
+    "Create": "Créer",
+    "Youcanchangethenameandpathmovement": "Vous pouvez modifier le nom et le chemin (déplacement)",
+    "From": "De",
+    "TO": "À",
+    "Cancellation": "Annuler",
+    "Rename": "Renommer"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "language": "Idioma",
+  "topbar": {
+    "refresh": "Actualizar",
+    "startWatch": "Iniciar supervisión",
+    "stopWatch": "Detener supervisión",
+    "createFile": "Crear archivo",
+    "createFolder": "Crear carpeta",
+    "uploadFiles": "Subir archivos",
+    "uploadFolder": "Subir carpeta",
+    "changeTheme": "Cambiar tema",
+    "saveAll": "Guardar todo",
+    "saveAllSuccess": "Todos los cambios se han guardado",
+    "saveSuccess": "Guardado",
+    "save": "Guardar"
+  },
+  "panel": {
+    "tree": "Árbol OPFS",
+    "updatedFromDisk": "Actualizado desde el disco",
+    "saved": "Guardado",
+    "created": "Creado",
+    "renamed": "Renombrado",
+    "ready": "Scripts de contenido listos",
+    "OPFSempty": "OPFS está vacío"
+  },
+  "conflict": {
+    "Thefileischangedoutside": "El archivo fue modificado externamente",
+    "Smerdzhit": "Fusionar",
+    "Replacethecontentsofthedisk": "Reemplazar con contenido del disco",
+    "Leavemyedits": "Mantener mis ediciones",
+    "Mergingchanges": "Fusionando cambios",
+    "Applyunited": "Aplicar fusión"
+  },
+  "editor": {
+    "Selectthefile": "Seleccione un archivo",
+    "Rollupdisruptededitstothelatestversionfromthedisk": "Revertir cambios no guardados a la última versión desde el disco",
+    "Rollowchanges": "Revertir cambios",
+    "Thistypeisnotyetsupportedforapreexamination": "Este tipo de archivo aún no es compatible con la vista previa."
+  },
+  "modals": {
+    "Createafile": "Crear un archivo",
+    "IndicatethepathregardingtherootofOPFSforexample": "Indique una ruta relativa a la raíz de OPFS (por ejemplo,",
+    "Cancellationlation": "Cancelar",
+    "Createafolder": "Crear una carpeta",
+    "Youcanbeinvested": "Puede especificar una ruta anidada",
+    "thewholechainwillbecreated": "se creará toda la cadena de carpetas",
+    "Path": "Ruta",
+    "Create": "Crear",
+    "Youcanchangethenameandpathmovement": "Puede cambiar el nombre y la ruta (mover)",
+    "From": "De",
+    "TO": "A",
+    "Cancellation": "Cancelar",
+    "Rename": "Renombrar"
+  }
+}

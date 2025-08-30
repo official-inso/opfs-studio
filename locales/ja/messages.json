@@ -1,0 +1,55 @@
+{
+  "language": "言語",
+  "topbar": {
+    "refresh": "更新",
+    "startWatch": "監視を開始",
+    "stopWatch": "監視を停止",
+    "createFile": "ファイルを作成",
+    "createFolder": "フォルダーを作成",
+    "uploadFiles": "ファイルをアップロード",
+    "uploadFolder": "フォルダーをアップロード",
+    "changeTheme": "テーマを変更",
+    "saveAll": "すべて保存",
+    "saveAllSuccess": "すべての変更が保存されました",
+    "saveSuccess": "保存済み",
+    "save": "保存"
+  },
+  "panel": {
+    "tree": "OPFS ツリー",
+    "updatedFromDisk": "ディスクから更新されました",
+    "saved": "保存済み",
+    "created": "作成済み",
+    "renamed": "名前を変更しました",
+    "ready": "コンテンツスクリプトの準備完了",
+    "OPFSempty": "OPFS は空です"
+  },
+  "conflict": {
+    "Thefileischangedoutside": "ファイルが外部で変更されました",
+    "Smerdzhit": "マージ",
+    "Replacethecontentsofthedisk": "ディスクの内容で置き換える",
+    "Leavemyedits": "自分の編集を保持する",
+    "Mergingchanges": "変更をマージ中",
+    "Applyunited": "マージを適用"
+  },
+  "editor": {
+    "Selectthefile": "ファイルを選択",
+    "Rollupdisruptededitstothelatestversionfromthedisk": "未保存の変更を破棄し、ディスク上の最新バージョンに戻す",
+    "Rollowchanges": "変更を破棄",
+    "Thistypeisnotyetsupportedforapreexamination": "このファイルタイプはまだプレビューに対応していません。"
+  },
+  "modals": {
+    "Createafile": "ファイルを作成",
+    "IndicatethepathregardingtherootofOPFSforexample": "OPFS のルートに対するパスを指定してください（例：",
+    "Cancellationlation": "キャンセル",
+    "Createafolder": "フォルダーを作成",
+    "Youcanbeinvested": "ネストされたパスを指定できます",
+    "thewholechainwillbecreated": "フォルダーのチェーン全体が作成されます",
+    "Path": "パス",
+    "Create": "作成",
+    "Youcanchangethenameandpathmovement": "名前やパス（移動）を変更できます",
+    "From": "から",
+    "TO": "へ",
+    "Cancellation": "キャンセル",
+    "Rename": "名前を変更"
+  }
+}

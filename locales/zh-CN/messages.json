@@ -1,0 +1,55 @@
+{
+  "language": "语言",
+  "topbar": {
+    "refresh": "刷新",
+    "startWatch": "开始监控",
+    "stopWatch": "停止监控",
+    "createFile": "创建文件",
+    "createFolder": "创建文件夹",
+    "uploadFiles": "上传文件",
+    "uploadFolder": "上传文件夹",
+    "changeTheme": "切换主题",
+    "saveAll": "全部保存",
+    "saveAllSuccess": "所有更改已保存",
+    "saveSuccess": "已保存",
+    "save": "保存"
+  },
+  "panel": {
+    "tree": "OPFS 树",
+    "updatedFromDisk": "已从磁盘更新",
+    "saved": "已保存",
+    "created": "已创建",
+    "renamed": "已重命名",
+    "ready": "内容脚本已准备就绪",
+    "OPFSempty": "OPFS 为空"
+  },
+  "conflict": {
+    "Thefileischangedoutside": "文件已在外部修改",
+    "Smerdzhit": "合并",
+    "Replacethecontentsofthedisk": "用磁盘内容替换",
+    "Leavemyedits": "保留我的修改",
+    "Mergingchanges": "正在合并更改",
+    "Applyunited": "应用合并"
+  },
+  "editor": {
+    "Selectthefile": "选择文件",
+    "Rollupdisruptededitstothelatestversionfromthedisk": "撤销未保存的更改并恢复为磁盘上的最新版本",
+    "Rollowchanges": "撤销更改",
+    "Thistypeisnotyetsupportedforapreexamination": "此文件类型暂不支持预览。"
+  },
+  "modals": {
+    "Createafile": "创建文件",
+    "IndicatethepathregardingtherootofOPFSforexample": "指定相对于 OPFS 根目录的路径（例如，",
+    "Cancellationlation": "取消",
+    "Createafolder": "创建文件夹",
+    "Youcanbeinvested": "可以指定嵌套路径",
+    "thewholechainwillbecreated": "将创建整个目录链",
+    "Path": "路径",
+    "Create": "创建",
+    "Youcanchangethenameandpathmovement": "可以更改名称和路径（移动）",
+    "From": "从",
+    "TO": "到",
+    "Cancellation": "取消",
+    "Rename": "重命名"
+  }
+}
