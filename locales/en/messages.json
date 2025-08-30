@@ -1,0 +1,55 @@
+{
+  "language": "Language",
+  "topbar": {
+    "refresh": "Refresh",
+    "startWatch": "Start watching",
+    "stopWatch": "Stop watching",
+    "createFile": "Create file",
+    "createFolder": "Create folder",
+    "uploadFiles": "Upload files",
+    "uploadFolder": "Upload folder",
+    "changeTheme": "Change theme",
+    "saveAll": "Save all",
+    "saveAllSuccess": "All changes saved",
+    "saveSuccess": "Saved",
+    "save": "Save"
+  },
+  "panel": {
+    "tree": "OPFS tree",
+    "updatedFromDisk": "Updated from disk",
+    "saved": "Saved",
+    "created": "Created",
+    "renamed": "Renamed",
+    "ready": "Content scripts ready",
+    "OPFSempty": "OPFS is empty"
+  },
+  "conflict": {
+    "Thefileischangedoutside": "The file was modified externally",
+    "Smerdzhit": "Merge",
+    "Replacethecontentsofthedisk": "Replace with contents from disk",
+    "Leavemyedits": "Keep my edits",
+    "Mergingchanges": "Merging changes",
+    "Applyunited": "Apply merged"
+  },
+  "editor": {
+    "Selectthefile": "Select a file",
+    "Rollupdisruptededitstothelatestversionfromthedisk": "Revert unsaved changes to the latest version from disk",
+    "Rollowchanges": "Revert changes",
+    "Thistypeisnotyetsupportedforapreexamination": "This file type is not yet supported for preview."
+  },
+  "modals": {
+    "Createafile": "Create a file",
+    "IndicatethepathregardingtherootofOPFSforexample": "Specify a path relative to the OPFS root (for example,",
+    "Cancellationlation": "Cancel",
+    "Createafolder": "Create a folder",
+    "Youcanbeinvested": "You can specify a nested path",
+    "thewholechainwillbecreated": "the whole directory chain will be created",
+    "Path": "Path",
+    "Create": "Create",
+    "Youcanchangethenameandpathmovement": "You can change the name and path (move)",
+    "From": "From",
+    "TO": "To",
+    "Cancellation": "Cancel",
+    "Rename": "Rename"
+  }
+}

@@ -3,6 +3,7 @@ import { CodeEditor } from "./Editor";
 import { useUI, isTextual } from "../store";
 import { ConflictBanner } from "./Conflict";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 function ext(path: string | null): string {
   return (path?.split(".").pop() ?? "").toLowerCase();
@@ -17,6 +18,8 @@ export const EditorPanel: React.FC = () => {
   const formatOnOpen = useUI((s) => s.formatOnOpen);
   const revertPath = useUI((s) => s.revertPath);
   const setConflict = useUI((s) => s.setConflict);
+
+  const { t } = useTranslation();
   
 
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -84,7 +87,7 @@ export const EditorPanel: React.FC = () => {
   if (!path)
     return (
       <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-        — выберите файл —
+        — {t("editor.Selectthefile")} —
       </div>
     );
 
@@ -105,9 +108,9 @@ export const EditorPanel: React.FC = () => {
                     setConflict(null);
                   }
                 }}
-                title="Откатить несохранённые правки к последней версии с диска"
+                title={t("editor.Rollupdisruptededitstothelatestversionfromthedisk")}
               >
-                Откатить изменения
+                {t("editor.Rollowchanges")}
               </Button>
             )}
           </div>
@@ -156,7 +159,7 @@ export const EditorPanel: React.FC = () => {
 
   return (
     <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-      Этот тип пока не поддерживается для предпросмотра.
+      {t("editor.Thistypeisnotyetsupportedforapreexamination")}
     </div>
   );
 };

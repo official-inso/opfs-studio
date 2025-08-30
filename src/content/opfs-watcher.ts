@@ -17,7 +17,7 @@ export async function getRoot(): Promise<DirHandle> {
   const storage = navigator.storage as StorageManagerWithDirectory | undefined;
   if (!storage || typeof storage.getDirectory !== "function") {
     throw new Error(
-      "OPFS (navigator.storage.getDirectory) недоступен на этой странице"
+      "OPFS (navigator.storage.getDirectory) Unavailable on this page"
     );
   }
   return storage.getDirectory();
@@ -67,7 +67,7 @@ export async function listRecursive(
         out.push(await readMeta(entry as FileHandle, path));
       }
       if (out.length > maxEntries)
-        throw new Error(`Превышен лимит файлов (${maxEntries})`);
+        throw new Error(`The file limit is exceeded (${maxEntries})`);
     }
   } else if ("keys" in (dir as unknown as DirKeys)) {
     for await (const name of (dir as unknown as DirKeys).keys()) {
@@ -85,10 +85,10 @@ export async function listRecursive(
         out.push(await readMeta(f, path));
       }
       if (out.length > maxEntries)
-        throw new Error(`Превышен лимит файлов (${maxEntries})`);
+        throw new Error(`The file limit is exceeded (${maxEntries})`);
     }
   } else {
-    throw new Error("DirectoryHandle без entries()/keys()");
+    throw new Error("DirectoryHandle without entries()/keys()");
   }
   return out;
 }

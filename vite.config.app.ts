@@ -1,42 +1,33 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { viteStaticCopy } from "vite-plugin-static-copy";
 import tailwindcss from "@tailwindcss/vite";
-import path from "path";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    viteStaticCopy({
-      targets: [
-        { src: "src/manifest.json", dest: "." },
-        { src: "public", dest: "." },
-      ],
-    }),
-  ],
+  plugins: [react(), tailwindcss()],
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    alias: { "@": path.resolve(__dirname, "./src") },
   },
   build: {
     target: "es2022",
     outDir: "dist",
+    emptyOutDir: false,
     rollupOptions: {
       input: {
         panel: "src/panel/index.html",
-        "content-script": "src/content/content-entry.ts",
         "service-worker": "src/background/service-entry.ts",
         devtools: "src/devtools/devtools.html",
         "devtools-panel": "src/devtools/panel.html",
       },
       output: {
+        format: "es",
         entryFileNames: (chunk) => {
           if (chunk.name === "service-worker")
             return "background/service-worker.js";
-          if (chunk.name === "content-script")
-            return "assets/content-script.js";
           return "assets/[name]-[hash].js";
         },
         chunkFileNames: "assets/[name]-[hash].js",

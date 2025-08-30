@@ -60,6 +60,7 @@ function stop(): void {
   post({ kind: "watch-status", data: { watching } });
 }
 
+
 chrome.runtime.onMessage.addListener(
   (msg: MsgToContent, _sender, sendResponse) => {
     (async () => {
@@ -71,6 +72,12 @@ chrome.runtime.onMessage.addListener(
             break;
           case "stop-watch":
             stop();
+            sendResponse({ ok: true });
+            break;
+          case "tab-unloaded":
+            const snap = await takeSnapshot(defaultOptions);
+            latest = snap;
+            post({ kind: "snapshot", data: snap });
             sendResponse({ ok: true });
             break;
           case "list": {
@@ -219,5 +226,18 @@ chrome.runtime.onMessage.addListener(
 
 post({ kind: "ready", data: null });
 post({ kind: "watch-status", data: { watching } });
+
+// post({ kind: "ready", data: { message: "ready" } });
+// start();
+// setTimeout(() => {
+//   post({ kind: "watch-status", data: { watching } });
+
+//   setTimeout(async () => {
+//     const snap = await takeSnapshot(defaultOptions);
+//     latest = snap;
+//     post({ kind: "snapshot", data: snap });
+//   }, 100);
+// }, 100);
+
 
 export {};

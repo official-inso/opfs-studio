@@ -1,0 +1,55 @@
+{
+  "language": "Sprache",
+  "topbar": {
+    "refresh": "Aktualisieren",
+    "startWatch": "Überwachung starten",
+    "stopWatch": "Überwachung stoppen",
+    "createFile": "Datei erstellen",
+    "createFolder": "Ordner erstellen",
+    "uploadFiles": "Dateien hochladen",
+    "uploadFolder": "Ordner hochladen",
+    "changeTheme": "Thema ändern",
+    "saveAll": "Alles speichern",
+    "saveAllSuccess": "Alle Änderungen wurden gespeichert",
+    "saveSuccess": "Gespeichert",
+    "save": "Speichern"
+  },
+  "panel": {
+    "tree": "OPFS-Baum",
+    "updatedFromDisk": "Vom Datenträger aktualisiert",
+    "saved": "Gespeichert",
+    "created": "Erstellt",
+    "renamed": "Umbenannt",
+    "ready": "Content-Skripte bereit",
+    "OPFSempty": "OPFS ist leer"
+  },
+  "conflict": {
+    "Thefileischangedoutside": "Die Datei wurde extern geändert",
+    "Smerdzhit": "Zusammenführen",
+    "Replacethecontentsofthedisk": "Mit Inhalt von Datenträger ersetzen",
+    "Leavemyedits": "Meine Änderungen behalten",
+    "Mergingchanges": "Änderungen zusammenführen",
+    "Applyunited": "Zusammenführung anwenden"
+  },
+  "editor": {
+    "Selectthefile": "Datei auswählen",
+    "Rollupdisruptededitstothelatestversionfromthedisk": "Ungespeicherte Änderungen verwerfen und letzte Version vom Datenträger laden",
+    "Rollowchanges": "Änderungen verwerfen",
+    "Thistypeisnotyetsupportedforapreexamination": "Dieser Dateityp wird für die Vorschau noch nicht unterstützt."
+  },
+  "modals": {
+    "Createafile": "Datei erstellen",
+    "IndicatethepathregardingtherootofOPFSforexample": "Geben Sie einen Pfad relativ zum OPFS-Stamm an (z. B.",
+    "Cancellationlation": "Abbrechen",
+    "Createafolder": "Ordner erstellen",
+    "Youcanbeinvested": "Sie können einen verschachtelten Pfad angeben",
+    "thewholechainwillbecreated": "die gesamte Ordnerkette wird erstellt",
+    "Path": "Pfad",
+    "Create": "Erstellen",
+    "Youcanchangethenameandpathmovement": "Sie können den Namen und Pfad ändern (verschieben)",
+    "From": "Von",
+    "TO": "Nach",
+    "Cancellation": "Abbrechen",
+    "Rename": "Umbenennen"
+  }
+}

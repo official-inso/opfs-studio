@@ -1,0 +1,55 @@
+{
+  "language": "Язык",
+  "topbar": {
+    "refresh": "Обновить",
+    "startWatch": "Начать отслеживание",
+    "stopWatch": "Остановить отслеживание",
+    "createFile": "Создать файл",
+    "createFolder": "Создать папку",
+    "uploadFiles": "Загрузить файлы",
+    "uploadFolder": "Загрузить папку",
+    "changeTheme": "Сменить тему",
+    "saveAll": "Сохранить всё",
+    "saveAllSuccess": "Все изменения сохранены",
+    "saveSuccess": "Сохранено",
+    "save": "Сохранить"
+  },
+  "panel": {
+    "tree": "Дерево OPFS",
+    "updatedFromDisk": "Обновлено с диска",
+    "saved": "Сохранено",
+    "created": "Создано",
+    "renamed": "Переименовано",
+    "ready": "Контент-скрипты готовы",
+    "OPFSempty": "OPFS пуст"
+  },
+  "conflict": {
+    "Thefileischangedoutside": "Файл изменён снаружи",
+    "Smerdzhit": "Смерджить",
+    "Replacethecontentsofthedisk": "Заменить содержимым диска",
+    "Leavemyedits": "Оставить мои правки",
+    "Mergingchanges": "Слияние изменений",
+    "Applyunited": "Применить объединённый"
+  },
+  "editor": {
+    "Selectthefile": "выберите файл",
+    "Rollupdisruptededitstothelatestversionfromthedisk": "Откатить несохранённые правки к последней версии с диска",
+    "Rollowchanges": "Откатить изменения",
+    "Thistypeisnotyetsupportedforapreexamination": "Этот тип пока не поддерживается для предпросмотра."
+  },
+  "modals": {
+    "Createafile": "Создать файл",
+    "IndicatethepathregardingtherootofOPFSforexample": "Укажи путь относительно корня OPFS (например,",
+    "Cancellationlation": "Отмена",
+    "Createafolder": "Создать папку",
+    "Youcanbeinvested": "Можно вложенный путь",
+    "thewholechainwillbecreated": "будет создана вся цепочка",
+    "Path": "Путь",
+    "Create": "Создать",
+    "Youcanchangethenameandpathmovement": "Можно менять имя и путь (перемещение)",
+    "From": "От",
+    "TO": "К",
+    "Cancellation": "Отмена",
+    "Rename": "Переименовать"
+  }
+}

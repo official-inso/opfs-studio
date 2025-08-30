@@ -70,7 +70,8 @@ export interface MsgToContent {
     | "write-bytes"
     | "create-file"
     | "create-dir"
-    | "rename-path";
+    | "rename-path"
+    | "tab-unloaded";
   data:
     | null
     | ReadRequest

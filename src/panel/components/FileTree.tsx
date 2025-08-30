@@ -18,6 +18,7 @@ import {
 import { RenameDialog } from "./Modals";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from "react-i18next";
 
 function fileIcon(node: FileNode): JSX.Element {
   const e = node.ext;
@@ -122,13 +123,14 @@ const Row: React.FC<{ depth: number; node: FileTreeNode }> = ({
   );
 
 export const FileTree: React.FC = () => {
+  const { t } = useTranslation();
   const tree = useUI((s) => s.tree);
   return (
     <ScrollArea className="h-full">
       <div className="p-1">
         {tree.length === 0 ? (
           <div className="text-xs text-muted-foreground px-2 py-1">
-            OPFS пуст
+            {t("panel.OPFSempty")}
           </div>
         ) : (
           tree.map((n) => <Row key={n.id} depth={0} node={n} />)

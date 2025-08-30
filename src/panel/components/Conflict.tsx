@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AlertTriangle, GitBranch, GitMerge, ReplaceAll } from "lucide-react";
 import { useUI } from "../store";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useTranslation } from "react-i18next";
 
 const toLF = (s: string): string => s.replace(/\r\n?/g, "\n");
 
@@ -17,6 +18,8 @@ export const ConflictBanner: React.FC = () => {
   const markSaved = useUI((s) => s.markSaved);
 
   const [open, setOpen] = useState(false);
+
+  const { t } = useTranslation();
 
   if (!conflict || !currentPath || conflict.path !== currentPath) return null;
 
@@ -45,7 +48,7 @@ export const ConflictBanner: React.FC = () => {
   return (
     <div className="py-2 bg-orange-700 text-amber-50 text-sm border-b border-amber-700 pr-2 pl-3 flex items-center gap-3">
       <AlertTriangle className="h-4 w-4" />
-      <div className="flex-shrink-0">Файл изменён снаружи</div>
+      <div className="flex-shrink-0">{t("conflict.Thefileischangedoutside")}</div>
       <div className="ml-auto flex items-center justify-end gap-2 flex-wrap">
         <Button
           size="sm"
@@ -54,7 +57,7 @@ export const ConflictBanner: React.FC = () => {
           onClick={() => setOpen(true)}
         >
           <GitMerge className="h-3.5 w-3.5" />
-          <div>Смерджить</div>
+          <div>{t("conflict.Smerdzhit")}</div>
         </Button>
         <Button
           size="sm"
@@ -65,7 +68,7 @@ export const ConflictBanner: React.FC = () => {
           }}
         >
           <ReplaceAll className="h-3.5 w-3.5" />
-          <div>Заменить содержимым диска</div>
+          <div>{t("conflict.Replacethecontentsofthedisk")}</div>
         </Button>
         <Button
           size="sm"
@@ -75,13 +78,13 @@ export const ConflictBanner: React.FC = () => {
           }}
         >
           <GitBranch className="h-3.5 w-3.5" />
-          <div>Оставить мои правки</div>
+          <div>{t("conflict.Leavemyedits")}</div>
         </Button>
       </div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="!w-[700px] !max-w-[700px] h-[70vh] !min-w-[300px]">
           <DialogHeader>
-            <DialogTitle>Слияние изменений</DialogTitle>
+            <DialogTitle>{t("conflict.Mergingchanges")}</DialogTitle>
           </DialogHeader>
           <DiffEditor
             right={toLF(conflict.diskContent)}
@@ -107,7 +110,9 @@ const DiffEditor: React.FC<{
     null
   );
 
-  React.useEffect(() => {
+  const { t } = useTranslation();
+
+  useEffect(() => {
     if (!host.current) return;
     const original = monaco.editor.createModel(left, "plaintext");
     const modified = monaco.editor.createModel(right, "plaintext");
@@ -151,7 +156,7 @@ const DiffEditor: React.FC<{
             onApply(merged);
           }}
         >
-          Применить объединённый
+          {t("conflict.Applyunited")}
         </Button>
       </div>
     </div>
