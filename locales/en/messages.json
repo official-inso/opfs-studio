@@ -51,5 +51,12 @@
     "TO": "To",
     "Cancellation": "Cancel",
     "Rename": "Rename"
+  },
+  "donate": {
+    "button": "Donate",
+    "title": "Support the project",
+    "region": "Your region",
+    "note": "All payments are processed on external provider pages. No card data is handled by the extension.",
+    "russia": "Russia and CIS countries"
   }
 }

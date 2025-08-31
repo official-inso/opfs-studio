@@ -51,5 +51,12 @@
     "TO": "Nach",
     "Cancellation": "Abbrechen",
     "Rename": "Umbenennen"
+  },
+  "donate": {
+    "button": "Donar",
+    "title": "Apoya el proyecto",
+    "region": "Tu región",
+    "note": "Todos los pagos se procesan en páginas externas de proveedores. La extensión no maneja datos de tarjetas.",
+    "russia": "Rusia y el Oriente Medio"
   }
 }

@@ -23,6 +23,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { trackEvent } from "@/analytics";
+import { DonateButton } from "./Donate";
 
 export const TopBar: React.FC = () => {
   const send = useUI((s) => s.send);
@@ -135,8 +136,7 @@ export const TopBar: React.FC = () => {
               size="icon"
               className="h-6 w-6"
               onClick={() => {
-                filesInput.current?.click()
-               
+                filesInput.current?.click();
               }}
             >
               <Upload className="!h-3 !w-3" />
@@ -215,13 +215,14 @@ export const TopBar: React.FC = () => {
         </Button> */}
 
         <div className="ml-auto flex items-center gap-2">
+          <DonateButton />
           <Button
             size="sm"
             variant="secondary"
             className="h-6 px-2 text-[12px]"
             onClick={() =>
               void saveAll().then(() => {
-                toast.success(t("topbar.saveAllSuccess"))
+                toast.success(t("topbar.saveAllSuccess"));
                 trackEvent("saveAll");
               })
             }

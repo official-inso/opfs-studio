@@ -51,5 +51,11 @@
     "TO": "A",
     "Cancellation": "Cancelar",
     "Rename": "Renombrar"
+  },
+  "donate": {
+    "button": "Spenden",
+    "title": "Unterstütze das Projekt",
+    "region": "Ihre Region",
+    "note": "Alle Zahlungen werden auf externen Anbieterseiten verarbeitet. Keine Kartendaten werden von der Erweiterung verarbeitet."
   }
 }

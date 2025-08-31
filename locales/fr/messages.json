@@ -51,5 +51,12 @@
     "TO": "À",
     "Cancellation": "Annuler",
     "Rename": "Renommer"
+  },
+  "donate": {
+    "button": "Donner",
+    "title": "Soutenir le projet",
+    "region": "Votre région",
+    "note": "Tous les paiements sont traités sur les pages externes des prestataires. Aucune donnée de carte n’est gérée par l’extension.",
+    "russia": "Russie et pays du Moyen-Orient"
   }
 }
