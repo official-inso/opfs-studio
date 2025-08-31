@@ -29,6 +29,56 @@ function langByPath(path: string | null): string {
       return "markdown";
     case "html":
       return "html";
+    case "xml":
+    case "svg":
+      return "xml";
+    case "yml":
+    case "yaml":
+      return "yaml";
+    case "sql":
+      return "sql";
+    case "py":
+    case "pyw":
+      return "python";
+    case "php":
+      return "php";
+    case "rb":
+      return "ruby";
+    case "go":
+      return "go";
+    case "java":
+      return "java";
+    case "cs":
+    case "csx":
+      return "csharp";
+    case "c":
+    case "h":
+    case "cc":
+    case "cxx":
+    case "cpp":
+    case "hpp":
+    case "hh":
+      return "cpp";
+    case "sh":
+    case "bash":
+    case "zsh":
+      return "shell";
+    case "ini":
+    case "conf":
+    case "cfg":
+      return "ini";
+    case "gql":
+    case "graphql":
+      return "graphql";
+    case "dockerfile":
+    case "containerfile":
+      return "dockerfile";
+
+    // текстовые по умолчанию
+    case "txt":
+    case "log":
+    case "ini-example":
+      return "plaintext";
     default:
       return "plaintext";
   }

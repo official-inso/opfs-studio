@@ -242,23 +242,68 @@ function findFileNode(nodes: FileTreeNode[], path: string): FileNode | null {
 
 export function isTextual(ext: string): boolean {
   return [
+    // web
     "ts",
     "tsx",
     "js",
     "jsx",
     "json",
     "css",
+    "scss",
+    "less",
     "md",
     "markdown",
     "html",
-    "txt",
     "xml",
+    "svg",
+
+    // конфиги и данные
+    "txt",
+    "csv",
     "yml",
     "yaml",
-    "svg",
-    "csv",
-    "sql",
+    "toml",
+    "ini",
+    "conf",
+    "cfg",
+    "env",
+
+    // dev & infra
     "log",
+    "sql",
+    "dockerfile",
+    "dockerignore",
+    "makefile",
+
+    // языки программирования
+    "py",
+    "pyw", // Python
+    "go", // Go
+    "rs", // Rust
+    "rb", // Ruby
+    "php", // PHP
+    "java", // Java
+    "kt",
+    "kts", // Kotlin
+    "c",
+    "h", // C
+    "cpp",
+    "cc",
+    "cxx",
+    "hpp", // C++
+    "cs", // C#
+    "sh",
+    "bash",
+    "zsh",
+    "fish", // Shell
+    "lua", // Lua
+    "pl",
+    "pm", // Perl
+
+    // misc
+    "r", // R language
+    "swift", // Swift
+    "dart", // Dart
   ].includes(ext);
 }
 

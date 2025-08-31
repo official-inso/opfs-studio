@@ -8,6 +8,9 @@ import {
   Music,
   FileArchive,
   File as FileIcon,
+  FilePlay,
+  FileJson,
+  FileCode,
 } from "lucide-react";
 import {
   useUI,
@@ -28,10 +31,15 @@ function fileIcon(node: FileNode): JSX.Element {
     return <Music className="h-4 w-4 text-purple-500" />;
   if (["zip", "gz", "tgz", "rar", "7z"].includes(e))
     return <FileArchive className="h-4 w-4 text-yellow-500" />;
+  if (["pdf"].includes(e)) return <FileText className="h-4 w-4 text-red-500" />;
+  if (["mp4", "webm", "ogv", "mov", "m4a", "m4b", "m4p", "m4v", "m4r", "m4s"].includes(e))
+    return <FilePlay className="h-4 w-4 text-green-500" />;
   if (
-    ["ts", "tsx", "js", "jsx", "json", "css", "md", "html", "txt", "xml", "yml", "yaml", "sql", "log", "csv"].includes(e)
+    ["ts", "tsx", "js", "jsx", "css", "md", "html", "txt", "yml", "yaml", "sql", "log", "csv"].includes(e)
   )
     return <FileText className="h-4 w-4 text-black/75 dark:text-white" />;
+  if (["json"].includes(e)) return <FileJson className="h-4 w-4 text-orange-400" />;
+  if (["xml"].includes(e)) return <FileCode className="h-4 w-4 text-pink-400" />;
   return <FileIcon className="h-4 w-4 text-gray-400" />;
 }
 
