@@ -39,7 +39,12 @@
     "Thistypeisnotyetsupportedforapreexamination": "This file type is not yet supported for preview.",
     "Loading": "Loading, opening file",
     "openInEditor": "Open in editor",
-    "openForced": "Opened in editor (forced)"
+    "openForced": "Opened in editor (forced)",
+    "downloadFile": "Download file",
+    "downloadImage": "Download image",
+    "downloadVideo": "Download video",
+    "downloadAudio": "Download audio",
+    "downloadPdf": "Download PDF"
   },
   "modals": {
     "Createafile": "Create a file",

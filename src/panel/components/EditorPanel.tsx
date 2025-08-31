@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CodeEditor } from "./Editor";
 import { useUI, isTextual } from "../store";
 import { ConflictBanner } from "./Conflict";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { base64ToUint8, base64ToUint8Local } from "@/shared/base64";
 import Spin from "./Spin";
+import { FileDown, ImageDown } from "lucide-react";
 
 function ext(path: string | null): string {
   return (path?.split(".").pop() ?? "").toLowerCase();
@@ -67,6 +68,7 @@ export const EditorPanel: React.FC = () => {
   const setConflict = useUI((s) => s.setConflict);
   const content = useUI((s) => s.content);
   const loading = useUI((s) => s.loading);
+  const send = useUI((s) => s.send);
 
   const { t } = useTranslation();
 
@@ -157,6 +159,96 @@ export const EditorPanel: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, textual, e, content, forceText]);
 
+  const handleDownloadFile = useCallback(async () => {
+    if (!path) return;
+
+    // имя файла из пути
+    const filename = path.split("/").filter(Boolean).pop() ?? "file";
+
+    const textMimeByExt = (x: string): string => {
+      switch (x) {
+        case "json":
+          return "application/json; charset=utf-8";
+        case "md":
+        case "markdown":
+          return "text/markdown; charset=utf-8";
+        case "html":
+          return "text/html; charset=utf-8";
+        case "css":
+          return "text/css; charset=utf-8";
+        case "js":
+        case "jsx":
+        case "ts":
+        case "tsx":
+          return "text/plain; charset=utf-8";
+        case "xml":
+        case "yml":
+        case "yaml":
+        case "csv":
+        case "txt":
+          return "text/plain; charset=utf-8";
+        case "svg":
+          // SVG можно считать текстом, но для корректного открытия системами лучше так:
+          return "image/svg+xml";
+        default:
+          return "text/plain; charset=utf-8";
+      }
+    };
+
+    try {
+      let blob: Blob;
+
+      if (textual || forceText) {
+        // Скачиваем как текст (то, что сейчас в редакторе)
+        const text = (forceText ? forceValue : buf) ?? "";
+        const mime = textMimeByExt(e);
+        blob = new Blob([text], { type: mime });
+      } else {
+        // Бинарные форматы: сначала пробуем base64 из стора
+        if (content) {
+          const bytes = (
+            base64ToUint8 ? base64ToUint8(content) : base64ToUint8Local(content)
+          ) as Uint8Array;
+          blob = new Blob([bytes.buffer as ArrayBuffer], {
+            type: contentTypeByExt(e),
+          });
+        } else if (blobUrl) {
+          // Если уже есть blobUrl предпросмотра — можно забрать Blob напрямую
+          const resp = await fetch(blobUrl);
+          blob = await resp.blob();
+        } else {
+          // Фолбэк: попросим байты у content-script
+          const resp = await send<{
+            ok?: boolean;
+            bytes?: ArrayBuffer;
+            error?: string;
+          }>({
+            kind: "read-bytes",
+            data: { path },
+          });
+          if (!resp?.ok || !resp.bytes) {
+            throw new Error(resp?.error ?? "Failed to read bytes");
+          }
+          blob = new Blob([resp.bytes], { type: contentTypeByExt(e) });
+        }
+      }
+
+      // Скачивание через временную ссылку
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Быстрый revoke — после клика
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to download file:", err);
+    }
+  }, [path, e, textual, forceText, forceValue, buf, content, blobUrl, send]);
+
   if (!path)
     return (
       <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
@@ -181,6 +273,15 @@ export const EditorPanel: React.FC = () => {
             </span>
           )}
           <div className="ml-auto flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-6 px-2 text-[11px] flex items-center gap-2"
+              onClick={handleDownloadFile}
+            >
+              <FileDown size={12} className="h-3 w-3" />
+              {t("editor.downloadFile", "Download file")}
+            </Button>
             {dirty && (
               <Button
                 size="sm"
@@ -237,39 +338,115 @@ export const EditorPanel: React.FC = () => {
       );
     }
     return (
-      <div className="h-full flex items-center justify-center bg-black">
-        <img
-          src={blobUrl}
-          alt={path ?? "image"}
-          className="max-w-full max-h-full"
-        />
+      <div className="flex flex-col min-h-0 h-full">
+        <div className="h-8 px-2 border-b text-xs flex items-center gap-2">
+          <span className="truncate">{path}</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-6 px-2 text-[11px] flex items-center gap-2"
+              onClick={handleDownloadFile}
+            >
+              <ImageDown size={12} className="h-3 w-3" />
+              {t("editor.downloadImage", "Download image")}
+            </Button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0">
+          <div className="h-full flex items-center justify-center bg-black">
+            <img
+              src={blobUrl}
+              alt={path ?? "image"}
+              className="max-w-full max-h-full"
+            />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (content && isVideo && blobUrl)
     return (
-      <div className="h-full flex items-center justify-center bg-black">
-        <video
-          src={blobUrl}
-          controls
-          playsInline
-          className="max-w-full max-h-full"
-        />
+      <div className="flex flex-col min-h-0 h-full">
+        <div className="h-8 px-2 border-b text-xs flex items-center gap-2">
+          <span className="truncate">{path}</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-6 px-2 text-[11px] flex items-center gap-2"
+              onClick={handleDownloadFile}
+            >
+              <FileDown size={12} className="h-3 w-3" />
+              {t("editor.downloadVideo", "Download video")}
+            </Button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0">
+          <div className="h-full flex items-center justify-center bg-black">
+            <video
+              src={blobUrl}
+              controls
+              playsInline
+              className="max-w-full max-h-full"
+            />
+          </div>
+        </div>
       </div>
     );
 
   if (content && isAudio && blobUrl)
     return (
-      <div className="h-full flex items-center justify-center bg-black">
-        <audio src={blobUrl} controls className="w-full" />
+      <div className="flex flex-col min-h-0 h-full">
+        <div className="h-8 px-2 border-b text-xs flex items-center gap-2">
+          <span className="truncate">{path}</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-6 px-2 text-[11px] flex items-center gap-2"
+              onClick={handleDownloadFile}
+            >
+              <FileDown size={12} className="h-3 w-3" />
+              {t("editor.downloadAudio", "Download audio")}
+            </Button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0">
+          <div className="h-full flex items-center justify-center bg-black">
+            <audio src={blobUrl} controls className="w-full" />
+          </div>
+        </div>
       </div>
     );
 
   if (content && isPdf && blobUrl)
     return (
-      <div className="w-full h-full bg-black/90">
-        <embed src={blobUrl} type="application/pdf" className="w-full h-full" />
+      <div className="flex flex-col min-h-0 h-full">
+        <div className="h-8 px-2 border-b text-xs flex items-center gap-2">
+          <span className="truncate">{path}</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-6 px-2 text-[11px] flex items-center gap-2"
+              onClick={handleDownloadFile}
+            >
+              <FileDown size={12} className="h-3 w-3" />
+              {t("editor.downloadPdf", "Download PDF")}
+            </Button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0">
+          <div className="w-full h-full bg-black/90">
+            <embed
+              src={blobUrl}
+              type="application/pdf"
+              className="w-full h-full"
+            />
+          </div>
+        </div>
       </div>
     );
 

@@ -39,7 +39,12 @@
     "Thistypeisnotyetsupportedforapreexamination": "Ce type de fichier n’est pas encore pris en charge pour l’aperçu.",
     "Loading": "Chargement, ouverture du fichier",
     "openInEditor": "Ouvrir dans l’éditeur",
-    "openForced": "Ouvert dans l’éditeur (forcé)"
+    "openForced": "Ouvert dans l’éditeur (forcé)",
+    "downloadFile": "Telecharger le fichier",
+    "downloadImage": "Télécharger l’image",
+    "downloadVideo": "Télécharger la vidéo",
+    "downloadAudio": "Télécharger l’audio",
+    "downloadPdf": "Télécharger le PDF"
   },
   "modals": {
     "Createafile": "Créer un fichier",

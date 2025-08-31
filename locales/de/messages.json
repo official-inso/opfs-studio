@@ -39,7 +39,12 @@
     "Thistypeisnotyetsupportedforapreexamination": "Este tipo de archivo aún no es compatible con la vista previa.",
     "Loading": "Laden, Datei wird geöffnet",
     "openInEditor": "Im Editor öffnen",
-    "openForced": "Im Editor geöffnet (erzwungen)"
+    "openForced": "Im Editor geöffnet (erzwungen)",
+    "downloadFile": "Datei herunterladen",
+    "downloadImage": "Bild herunterladen",
+    "downloadVideo": "Video herunterladen",
+    "downloadAudio": "Audio herunterladen",
+    "downloadPdf": "PDF herunterladen"
   },
   "modals": {
     "Createafile": "Crear un archivo",

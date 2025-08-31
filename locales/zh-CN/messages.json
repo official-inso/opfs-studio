@@ -39,7 +39,12 @@
     "Thistypeisnotyetsupportedforapreexamination": "此文件类型暂不支持预览。",
     "Loading": "正在加载，打开文件",
     "openInEditor": "在编辑器中打开",
-    "openForced": "在编辑器中打开（强制）"
+    "openForced": "在编辑器中打开（强制）",
+    "downloadFile": "下载文件",
+    "downloadImage": "下载图片",
+    "downloadVideo": "下载视频",
+    "downloadAudio": "下载音频",
+    "downloadPdf": "下载PDF"
   },
   "modals": {
     "Createafile": "创建文件",

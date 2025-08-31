@@ -39,7 +39,12 @@
     "Thistypeisnotyetsupportedforapreexamination": "Этот тип пока не поддерживается для предпросмотра.",
     "Loading": "Загрузка, открываем файл",
     "openInEditor": "Открыть в редакторе",
-    "openForced": "Открыто в редакторе (принудительно)"
+    "openForced": "Открыто в редакторе (принудительно)",
+    "downloadFile": "Скачать файл",
+    "downloadImage": "Скачать изображение",
+    "downloadVideo": "Скачать видео",
+    "downloadAudio": "Скачать аудио",
+    "downloadPdf": "Скачать PDF"
   },
   "modals": {
     "Createafile": "Создать файл",
