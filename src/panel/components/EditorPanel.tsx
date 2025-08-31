@@ -164,15 +164,6 @@ export const EditorPanel: React.FC = () => {
       </div>
     );
 
-  if (loading) {
-    return (
-      <div className="h-full flex flex-col gap-2 items-center justify-center text-sm text-muted-foreground">
-        <Spin />
-        <span className="ml-2">{t("editor.Loading")}...</span>
-      </div>
-    );
-  }
-
   if (textual || forceText) {
     const valueForEditor = forceText ? forceValue : buf;
     const onChangeEditor = (next: string) => {
@@ -219,6 +210,15 @@ export const EditorPanel: React.FC = () => {
             formatOnOpen={formatOnOpen}
           />
         </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="h-full flex flex-col gap-2 items-center justify-center text-sm text-muted-foreground">
+        <Spin />
+        <span className="ml-2">{t("editor.Loading")}...</span>
       </div>
     );
   }
