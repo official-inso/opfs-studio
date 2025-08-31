@@ -44,6 +44,8 @@ src/wasm/**/pkg/
 # сырой .wasm если где-то оставили вне pkg
 src/wasm/**/*.wasm
 
+builds
+
 # === IDE ===
 .vscode/
 .idea/

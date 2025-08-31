@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "OPFS Studio Extension",
+  "version": "1.0.0",
+  "description": "Following OPFS on the page and edits files via Monaco.",
+  "icons": {
+    "128": "public/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' https:; style-src 'self' 'unsafe-inline'"
+  },
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "sidePanel",
+    "storage"
+  ],
+  "devtools_page": "src/devtools/devtools.html",
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open OPFS Panel"
+  },
+  "side_panel": {
+    "default_path": "src/panel/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "assets/content-script.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/*",
+        "locales/en/common.json",
+        "locales/ru/common.json",
+        "locales/fr/common.json",
+        "locales/de/common.json",
+        "locales/es/common.json",
+        "locales/zh/common.json",
+        "locales/ja/common.json"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

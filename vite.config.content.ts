@@ -8,13 +8,20 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const TARGET = process.env.TARGET ?? "chrome";
+
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
     viteStaticCopy({
       targets: [
-        { src: "src/manifest.json", dest: "." },
+        {
+          src: `manifests/manifest.${TARGET}.json`,
+          dest: ".",
+          rename: "manifest.json",
+        },
+        // { src: "src/manifest.json", dest: "." },
         { src: "locales", dest: "." },
         { src: "public", dest: "." },
       ],

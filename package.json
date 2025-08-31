@@ -6,6 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build -c vite.config.content.ts && vite build -c vite.config.app.ts",
+    "build:chrome": "cross-env TARGET=chrome npm run build",
+    "build:edge": "cross-env TARGET=edge npm run build",
+    "build:firefox": "cross-env TARGET=firefox npm run build",
+    "zip:chrome": "mkdir -p builds && cd dist && zip -r ../builds/opfs-studio-chrome.zip .",
+    "zip:edge": "mkdir -p builds && cd dist && zip -r ../builds/opfs-studio-edge.zip .",
+    "zip:firefox": "mkdir -p builds && cd dist && zip -r ../builds/opfs-studio-firefox.zip .",
+    "build:all": "npm run build:chrome && npm run build:edge && npm run build:firefox && npm run zip:chrome && npm run zip:edge && npm run zip:firefox",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -47,6 +54,7 @@
     "@types/react-dom": "18.3.0",
     "@vitejs/plugin-react": "^5.0.1",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^10.0.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.12",
