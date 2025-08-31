@@ -150,7 +150,7 @@ export const FileTree: React.FC = () => {
   const { t } = useTranslation();
   const tree = useUI((s) => s.tree);
   return (
-    <ScrollArea className="h-full w-full test123">
+    <ScrollArea className="h-full w-full test123 pb-8">
       <div className="p-1">
         {tree.length === 0 ? (
           <div className="h-full flex-1 text-center text-xs text-muted-foreground px-2 py-1 flex items-center gap-1 flex-col justify-center">

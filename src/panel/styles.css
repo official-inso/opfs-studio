@@ -177,3 +177,8 @@
 .test123 > div > div {
   display: block !important;
 }
+body {
+  height: 100vw;
+  width: 100vw;
+  overflow: hidden;
+}
