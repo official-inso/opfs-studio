@@ -21,4 +21,5 @@ export const getTheme = (): "light" | "dark" => {
 
 export const setTheme = (theme: "light" | "dark"): void => {
   document.documentElement.classList.toggle("dark", theme === "dark");
+  localStorage.setItem("theme", theme);
 };

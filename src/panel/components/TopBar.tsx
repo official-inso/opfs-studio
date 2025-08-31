@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   RefreshCcw,
@@ -42,6 +42,11 @@ export const TopBar: React.FC = () => {
   const folderInput = useRef<HTMLInputElement | null>(null);
 
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const theme = localStorage.getItem("theme");
+    if (theme) setTheme(theme as "light" | "dark");
+  }, [setTheme])
 
   return (
     <div className="border-b bg-background">
