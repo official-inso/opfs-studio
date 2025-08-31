@@ -36,7 +36,8 @@
     "Selectthefile": "Select a file",
     "Rollupdisruptededitstothelatestversionfromthedisk": "Revert unsaved changes to the latest version from disk",
     "Rollowchanges": "Revert changes",
-    "Thistypeisnotyetsupportedforapreexamination": "This file type is not yet supported for preview."
+    "Thistypeisnotyetsupportedforapreexamination": "This file type is not yet supported for preview.",
+    "Loading": "Loading, opening file"
   },
   "modals": {
     "Createafile": "Create a file",

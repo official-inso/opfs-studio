@@ -30,7 +30,8 @@ export interface MsgFromContent {
     | "rename-result"
     | "error"
     | "open-panel"
-    | "remove-result";
+    | "remove-result"
+    | "file-read-start";
   data:
     | null
     | { watching: boolean }
@@ -42,7 +43,7 @@ export interface MsgFromContent {
     | { ok: true; path: FilePath }
     | { ok: true; from: FilePath; to: FilePath }
     | { message: string }
-    | { ok: true; path: FilePath }
+    | { ok: true; path: FilePath; bytes: string };
 }
 
 export type ReadRequest = { path: FilePath };

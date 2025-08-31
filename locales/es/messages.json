@@ -36,7 +36,8 @@
     "Selectthefile": "Datei auswählen",
     "Rollupdisruptededitstothelatestversionfromthedisk": "Ungespeicherte Änderungen verwerfen und letzte Version vom Datenträger laden",
     "Rollowchanges": "Änderungen verwerfen",
-    "Thistypeisnotyetsupportedforapreexamination": "Dieser Dateityp wird für die Vorschau noch nicht unterstützt."
+    "Thistypeisnotyetsupportedforapreexamination": "Dieser Dateityp wird für die Vorschau noch nicht unterstützt.",
+    "Loading": "Cargando, abriendo archivo"
   },
   "modals": {
     "Createafile": "Datei erstellen",

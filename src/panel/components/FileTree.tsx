@@ -71,13 +71,29 @@ const DirRow: React.FC<{ depth: number; d: DirNode }> = ({ depth, d }) => {
   );
 };
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let i = -1;
+  do {
+    bytes /= 1024;
+    i++;
+  } while (bytes >= 1024 && i < units.length - 1);
+  return `${bytes.toFixed(1)} ${units[i]}`;
+}
+
+function formatDate(timestamp: number): string {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(timestamp);
+}
+
 const FileRow: React.FC<{ depth: number; f: FileNode }> = ({ depth, f }) => {
   const openFile = useUI((s) => s.openFile);
   const currentPath = useUI((s) => s.currentPath);
   const active = currentPath === f.path;
-  const info = `${(f.size / 1024).toFixed(1)} KB • ${new Date(
-    f.lastModified
-  ).toLocaleString()}`;
+  const info = `${formatFileSize(f.size)} • ${formatDate(f.lastModified)}`;
 
   return (
     <div

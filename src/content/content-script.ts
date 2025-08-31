@@ -121,9 +121,12 @@ chrome.runtime.onMessage.addListener(
           }
 
           case "read-file": {
+            post({ kind: "file-read-start", data: null });
             const { path } = msg.data as { path: string };
             const content = await readText(path);
-            post({ kind: "file-read", data: { path, content } });
+            const bytes = await readBytes(path);
+
+            post({ kind: "file-read", data: { path, content, bytes } });
             sendResponse({ ok: true });
             break;
           }
@@ -227,12 +230,13 @@ chrome.runtime.onMessage.addListener(
             sendResponse({ ok: true });
             break;
           }
-          case "read-bytes": {
-            const { path } = msg.data as { path: string };
-            const bytes = await readBytes(path);
-            sendResponse({ ok: true, bytes });
-            break;
-          }
+          // case "read-bytes": {
+          //   const { path } = msg.data as { path: string };
+          //   const bytes = await readBytes(path);
+          //   post({ kind: "bytes-read", data: { path, bytes } });
+          //   sendResponse({ ok: true, bytes });
+          //   break;
+          // }
           case "rename-path": {
             const { from, to } = msg.data as { from: string; to: string };
             await renamePath(from, to);

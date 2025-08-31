@@ -47,7 +47,12 @@ export interface UIState {
   buffer: string;
   buffers: Record<string, string>;
   lastDisk: Record<string, string>;
+
+  content: string;
   eolByPath: Record<string, EolStyle>;
+
+  loading: boolean;
+  setLoading: (l: boolean) => void;
 
   statusLine: string;
   tabId: number | null;
@@ -55,6 +60,8 @@ export interface UIState {
   conflict: Conflict | null;
   awaitingConflictFor: string | null;
   formatOnOpen: boolean;
+
+  setContent: (text: string) => void;
 
   revertPath: (path: string) => void;
   applyDiskContent: (path: string, text: string) => void;
@@ -266,6 +273,11 @@ export const useUI = create<UIState>((set, get) => ({
   buffer: "",
   buffers: {},
 
+  loading: true,
+  setLoading: (l: boolean) => set({ loading: l }),
+
+  content: "",
+
   statusLine: "Success",
   tabId: null,
   watching: true,
@@ -278,6 +290,8 @@ export const useUI = create<UIState>((set, get) => ({
   setTab: (id) => set({ tabId: id }),
   setWatching: (w) => set({ watching: w }),
   toggleFormatOnOpen: () => set((s) => ({ formatOnOpen: !s.formatOnOpen })),
+
+  setContent: (text: string) => set({ content: text }),
 
   applyDiskContent: (path, text) => {
     const eol = detectEol(text);
@@ -401,7 +415,7 @@ export const useUI = create<UIState>((set, get) => ({
     set({
       currentPath: path,
       conflict: null,
-      statusLine: `Открывается: ${path}`,
+      statusLine: `Opening: ${path}`,
       ...(typeof known === "string" ? { buffer: known } : {}),
     });
 

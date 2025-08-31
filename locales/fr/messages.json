@@ -36,7 +36,8 @@
     "Selectthefile": "Sélectionnez un fichier",
     "Rollupdisruptededitstothelatestversionfromthedisk": "Annuler les modifications non enregistrées et revenir à la dernière version du disque",
     "Rollowchanges": "Annuler les modifications",
-    "Thistypeisnotyetsupportedforapreexamination": "Ce type de fichier n’est pas encore pris en charge pour l’aperçu."
+    "Thistypeisnotyetsupportedforapreexamination": "Ce type de fichier n’est pas encore pris en charge pour l’aperçu.",
+    "Loading": "Chargement, ouverture du fichier"
   },
   "modals": {
     "Createafile": "Créer un fichier",

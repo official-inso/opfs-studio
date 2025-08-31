@@ -69,9 +69,7 @@ export async function removePath(
     hasError = true;
     dataError = e;
   }
-
 }
-
 
 export async function readMeta(
   handle: FileHandle | DirHandle,
@@ -327,7 +325,7 @@ export async function renamePath(from: string, to: string): Promise<void> {
   }
 }
 
-export async function readBytes(path: string): Promise<ArrayBuffer> {
+export async function readBytes(path: string): Promise<string> {
   const root = await getRoot();
   const parts = path.split("/").filter(Boolean);
   let dir = root;
@@ -335,5 +333,28 @@ export async function readBytes(path: string): Promise<ArrayBuffer> {
     dir = await dir.getDirectoryHandle(parts[i]!);
   const fh = await dir.getFileHandle(parts.at(-1)!);
   const file = await fh.getFile();
-  return file.arrayBuffer();
+  return _arrayBufferToBase64(await file.arrayBuffer());
+}
+
+function _arrayBufferToBase64(buffer: ArrayBuffer) {
+  var binary = "";
+  var bytes = new Uint8Array(buffer);
+  var len = bytes.byteLength;
+  for (var i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
+export async function getBlobUrl(path: string, type: string): Promise<string> {
+  const storage = await (navigator.storage as any).getDirectory();
+  const parts = path.split("/").filter(Boolean);
+  const name = parts.pop()!;
+  let dir = storage;
+  for (const seg of parts) {
+    dir = await dir.getDirectoryHandle(seg);
+  }
+  const fh = await dir.getFileHandle(name);
+  const file = await fh.getFile();
+  return URL.createObjectURL(new Blob([await file.arrayBuffer()], { type }));
 }

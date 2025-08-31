@@ -1,12 +1,52 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CodeEditor } from "./Editor";
 import { useUI, isTextual } from "../store";
 import { ConflictBanner } from "./Conflict";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { base64ToUint8, base64ToUint8Local } from "@/shared/base64";
+import Spin from "./Spin";
 
 function ext(path: string | null): string {
   return (path?.split(".").pop() ?? "").toLowerCase();
+}
+
+function contentTypeByExt(e: string): string {
+  switch (e) {
+    // images
+    case "svg":
+      return "image/svg+xml";
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "png":
+      return "image/png";
+    case "gif":
+      return "image/gif";
+    case "webp":
+      return "image/webp";
+    // video
+    case "mp4":
+      return "video/mp4";
+    case "webm":
+      return "video/webm";
+    case "ogv":
+      return "video/ogg"; // важно
+    case "mov":
+      return "video/quicktime"; // важно
+    // audio
+    case "mp3":
+      return "audio/mpeg"; // важно
+    case "wav":
+      return "audio/wav";
+    case "ogg":
+      return "audio/ogg";
+    // docs
+    case "pdf":
+      return "application/pdf";
+    default:
+      return "application/octet-stream";
+  }
 }
 
 export const EditorPanel: React.FC = () => {
@@ -18,11 +58,14 @@ export const EditorPanel: React.FC = () => {
   const formatOnOpen = useUI((s) => s.formatOnOpen);
   const revertPath = useUI((s) => s.revertPath);
   const setConflict = useUI((s) => s.setConflict);
+  const content = useUI((s) => s.content);
+
+  const loading = useUI((s) => s.loading);
 
   const { t } = useTranslation();
-  
 
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const revokeRef = useRef<string | null>(null);
 
   const e = ext(path);
   const textual = isTextual(e);
@@ -33,56 +76,44 @@ export const EditorPanel: React.FC = () => {
 
   const dirty = Boolean(path && buf !== (lastDisk[path!] ?? ""));
 
+  // Грузим бинарный файл через content-script и делаем blob URL в панели
   useEffect(() => {
-    setBlobUrl(null);
-    if (!path || textual) return;
-    void (async () => {
-      const resp = await send<{ ok: true; bytes: ArrayBuffer }>({
-        kind: "read-bytes",
-        data: { path },
-      });
-      if (!resp?.bytes) return;
-      const type = isImage
-        ? e === "svg"
-          ? "image/svg+xml"
-          : `image/${e === "jpg" ? "jpeg" : e}`
-        : isVideo
-          ? `video/${e}`
-          : isAudio
-            ? `audio/${e}`
-            : isPdf
-              ? "application/pdf"
-              : "application/octet-stream";
-      const url = URL.createObjectURL(new Blob([resp.bytes], { type }));
-      setBlobUrl(url);
-    })();
-    chrome.runtime.onMessage.addListener(function onMsg(m) {
-      if (m?.kind === "bytes-read" && m.data?.path === path) {
-        const bytes: ArrayBuffer = m.data.bytes;
-        const type = isImage
-          ? `image/${e === "jpg" ? "jpeg" : e}`
-          : isVideo
-            ? `video/${e}`
-            : isAudio
-              ? `audio/${e}`
-              : isPdf
-                ? "application/pdf"
-                : "application/octet-stream";
-        const url = URL.createObjectURL(new Blob([bytes], { type }));
-        setBlobUrl(url);
-        chrome.runtime.onMessage.removeListener(onMsg);
-      }
-      return false;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [path, textual]);
+    if (textual) return;
 
-  useEffect(
-    () => () => {
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
-    },
-    [blobUrl]
-  );
+    // сброс предыдущего blob URL
+    if (revokeRef.current) {
+      URL.revokeObjectURL(revokeRef.current);
+      revokeRef.current = null;
+    }
+    setBlobUrl(null);
+
+    if (!path || !content) return;
+
+    try {
+      const type = contentTypeByExt(e);
+      // content — это base64 без префикса data:
+      const bytes = base64ToUint8
+        ? base64ToUint8(content)
+        : base64ToUint8Local(content);
+
+      const buf = bytes instanceof Uint8Array ? bytes.buffer : bytes;
+      const url = URL.createObjectURL(new Blob([buf as any], { type }));
+
+      revokeRef.current = url;
+      setBlobUrl(url);
+    } catch (err) {
+      console.error("Failed to build blob url from base64:", err);
+    }
+
+    // cleanup на размонтировании/смене файла
+    return () => {
+      if (revokeRef.current) {
+        URL.revokeObjectURL(revokeRef.current);
+        revokeRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [path, textual, e, content]);
 
   if (!path)
     return (
@@ -90,6 +121,15 @@ export const EditorPanel: React.FC = () => {
         — {t("editor.Selectthefile")} —
       </div>
     );
+
+  if (loading) {
+    return (
+      <div className="h-full flex flex-col gap-2 items-center justify-center text-sm text-muted-foreground">
+        <Spin />
+        <span className="ml-2">{t("editor.Loading")}...</span>
+      </div>
+    );
+  }
 
   if (textual) {
     return (
@@ -108,7 +148,9 @@ export const EditorPanel: React.FC = () => {
                     setConflict(null);
                   }
                 }}
-                title={t("editor.Rollupdisruptededitstothelatestversionfromthedisk")}
+                title={t(
+                  "editor.Rollupdisruptededitstothelatestversionfromthedisk"
+                )}
               >
                 {t("editor.Rollowchanges")}
               </Button>
@@ -128,38 +170,62 @@ export const EditorPanel: React.FC = () => {
     );
   }
 
-  if (isImage && blobUrl)
+  // Binary previews
+  if (content && isImage && blobUrl) {
+    if (e === "svg") {
+      return (
+        <div className="h-full flex items-center justify-center bg-black">
+          <object
+            data={blobUrl}
+            type="image/svg+xml"
+            className="max-w-full max-h-full"
+            aria-label={path ?? "svg"}
+          />
+        </div>
+      );
+    }
     return (
       <div className="h-full flex items-center justify-center bg-black">
         <img
           src={blobUrl}
-          alt={path}
-          style={{ maxWidth: "100%", maxHeight: "100%" }}
+          alt={path ?? "image"}
+          className="max-w-full max-h-full"
         />
       </div>
     );
-  if (isVideo && blobUrl)
+  }
+
+  if (content && isVideo && blobUrl)
     return (
       <div className="h-full flex items-center justify-center bg-black">
         <video
           src={blobUrl}
           controls
-          style={{ maxWidth: "100%", maxHeight: "100%" }}
+          playsInline
+          className="max-w-full max-h-full"
         />
       </div>
     );
-  if (isAudio && blobUrl)
+
+  if (content && isAudio && blobUrl)
     return (
       <div className="h-full flex items-center justify-center bg-black">
-        <audio src={blobUrl} controls style={{ width: "100%" }} />
+        <audio src={blobUrl} controls className="w-full" />
       </div>
     );
-  if (isPdf && blobUrl)
-    return <iframe className="w-full h-full" src={blobUrl} title={path} />;
+
+  if (content && isPdf && blobUrl)
+    return (
+      <div className="w-full h-full bg-black/90">
+        <embed src={blobUrl} type="application/pdf" className="w-full h-full" />
+      </div>
+    );
 
   return (
     <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
       {t("editor.Thistypeisnotyetsupportedforapreexamination")}
+
+      
     </div>
   );
 };

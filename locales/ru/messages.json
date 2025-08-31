@@ -36,7 +36,8 @@
     "Selectthefile": "выберите файл",
     "Rollupdisruptededitstothelatestversionfromthedisk": "Откатить несохранённые правки к последней версии с диска",
     "Rollowchanges": "Откатить изменения",
-    "Thistypeisnotyetsupportedforapreexamination": "Этот тип пока не поддерживается для предпросмотра."
+    "Thistypeisnotyetsupportedforapreexamination": "Этот тип пока не поддерживается для предпросмотра.",
+    "Loading": "Загрузка, открываем файл"
   },
   "modals": {
     "Createafile": "Создать файл",

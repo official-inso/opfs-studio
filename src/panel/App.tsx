@@ -71,6 +71,7 @@ function AppContent() {
   const applySnapshot = useUI((s) => s.applySnapshot);
   const applyWatchEvents = useUI((s) => s.applyWatchEvents);
   const setStatus = useUI((s) => s.setStatus);
+  const setContent = useUI((s) => s.setContent);
   const send = useUI((s) => s.send);
   const watching = useUI((s) => s.watching);
   const stopOpenWatchdog = useUI((s) => s.stopOpenWatchdog);
@@ -94,10 +95,14 @@ function AppContent() {
       return;
     }
 
+    if (msg.kind === "file-read-start") {
+      useUI.setState({ loading: true });
+    }
+
     if (msg.kind === "file-read") {
       stopOpenWatchdog();
 
-      const { path, content } = msg.data as { path: string; content: string };
+      const { path, content, bytes } = msg.data as { path: string; content: string, bytes: string };
       const state = useUI.getState();
       const { awaitingConflictFor, buffers, lastDisk } = state;
 
@@ -114,8 +119,10 @@ function AppContent() {
         return;
       }
 
+      setContent(bytes);
       state.applyDiskContent(path, content);
       state.setStatus(`${t("panel.updatedFromDisk")}: ${path}`);
+      useUI.setState({ loading: false });
       return;
     }
 

@@ -6,6 +6,9 @@
   "icons": {
     "128": "public/icon128.png"
   },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' https:; style-src 'self' 'unsafe-inline'"
+  },
   "permissions": [
     "scripting",
     "activeTab",

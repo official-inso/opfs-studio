@@ -36,7 +36,8 @@
     "Selectthefile": "Seleccione un archivo",
     "Rollupdisruptededitstothelatestversionfromthedisk": "Revertir cambios no guardados a la última versión desde el disco",
     "Rollowchanges": "Revertir cambios",
-    "Thistypeisnotyetsupportedforapreexamination": "Este tipo de archivo aún no es compatible con la vista previa."
+    "Thistypeisnotyetsupportedforapreexamination": "Este tipo de archivo aún no es compatible con la vista previa.",
+    "Loading": "Laden, Datei wird geöffnet"
   },
   "modals": {
     "Createafile": "Crear un archivo",

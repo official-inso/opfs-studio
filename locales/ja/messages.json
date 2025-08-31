@@ -36,7 +36,8 @@
     "Selectthefile": "ファイルを選択",
     "Rollupdisruptededitstothelatestversionfromthedisk": "未保存の変更を破棄し、ディスク上の最新バージョンに戻す",
     "Rollowchanges": "変更を破棄",
-    "Thistypeisnotyetsupportedforapreexamination": "このファイルタイプはまだプレビューに対応していません。"
+    "Thistypeisnotyetsupportedforapreexamination": "このファイルタイプはまだプレビューに対応していません。",
+    "Loading": "読み込み中、ファイルを開いています"
   },
   "modals": {
     "Createafile": "ファイルを作成",
