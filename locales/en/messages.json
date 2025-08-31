@@ -21,7 +21,7 @@
     "created": "Created",
     "renamed": "Renamed",
     "ready": "Content scripts ready",
-    "OPFSempty": "OPFS is empty",
+    "OPFSempty": "OPFS is empty or the tab is unavailable",
     "deleted": "Deleted"
   },
   "conflict": {

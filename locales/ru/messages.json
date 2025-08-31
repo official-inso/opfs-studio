@@ -21,7 +21,7 @@
     "created": "Создано",
     "renamed": "Переименовано",
     "ready": "Контент-скрипты готовы",
-    "OPFSempty": "OPFS пуст",
+    "OPFSempty": "OPFS пуст или вкладка недоступна",
     "deleted": "Удалено"
   },
   "conflict": {

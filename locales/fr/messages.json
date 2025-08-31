@@ -21,7 +21,7 @@
     "created": "Créé",
     "renamed": "Renommé",
     "ready": "Scripts de contenu prêts",
-    "OPFSempty": "OPFS est vide",
+    "OPFSempty": "OPFS est vide ou l'onglet n'est pas disponible",
     "deleted": "Supprimé"
   },
   "conflict": {

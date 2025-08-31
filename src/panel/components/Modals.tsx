@@ -154,7 +154,7 @@ export const RenameDialog: React.FC<{ from: string; onDone?: () => void }> = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" size="icon" title="Переименовать">
+        <Button variant="secondary" size="icon" title={t("modals.Rename")}>
           <Pencil className="h-3 w-3" />
         </Button>
       </DialogTrigger>

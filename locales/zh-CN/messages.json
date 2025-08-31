@@ -21,7 +21,7 @@
     "created": "已创建",
     "renamed": "已重命名",
     "ready": "内容脚本已准备就绪",
-    "OPFSempty": "OPFS 为空",
+    "OPFSempty": "OPFS为空或选项卡不可用",
     "deleted": "已删除"
   },
   "conflict": {
