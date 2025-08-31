@@ -31,12 +31,12 @@ function contentTypeByExt(e: string): string {
     case "webm":
       return "video/webm";
     case "ogv":
-      return "video/ogg"; // важно
+      return "video/ogg";
     case "mov":
-      return "video/quicktime"; // важно
+      return "video/quicktime";
     // audio
     case "mp3":
-      return "audio/mpeg"; // важно
+      return "audio/mpeg";
     case "wav":
       return "audio/wav";
     case "ogg":
@@ -49,23 +49,42 @@ function contentTypeByExt(e: string): string {
   }
 }
 
+function decodeBase64ToUtf8(b64: string): string {
+  const bytes = (
+    base64ToUint8 ? base64ToUint8(b64) : base64ToUint8Local(b64)
+  ) as Uint8Array;
+  const dec = new TextDecoder("utf-8", { fatal: false });
+  return dec.decode(bytes);
+}
+
 export const EditorPanel: React.FC = () => {
   const path = useUI((s) => s.currentPath);
   const buf = useUI((s) => s.buffer);
   const lastDisk = useUI((s) => s.lastDisk);
   const setBuf = useUI((s) => s.setBuffer);
-  const send = useUI((s) => s.send);
   const formatOnOpen = useUI((s) => s.formatOnOpen);
   const revertPath = useUI((s) => s.revertPath);
   const setConflict = useUI((s) => s.setConflict);
   const content = useUI((s) => s.content);
-
   const loading = useUI((s) => s.loading);
 
   const { t } = useTranslation();
 
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const revokeRef = useRef<string | null>(null);
+
+  const [forceText, setForceText] = useState<boolean>(false);
+  const [forceValue, setForceValue] = useState<string>("");
+
+  useEffect(() => {
+    setForceText(false);
+    setForceValue("");
+    if (revokeRef.current) {
+      URL.revokeObjectURL(revokeRef.current);
+      revokeRef.current = null;
+    }
+    setBlobUrl(null);
+  }, [path]);
 
   const e = ext(path);
   const textual = isTextual(e);
@@ -76,36 +95,59 @@ export const EditorPanel: React.FC = () => {
 
   const dirty = Boolean(path && buf !== (lastDisk[path!] ?? ""));
 
-  // Грузим бинарный файл через content-script и делаем blob URL в панели
   useEffect(() => {
-    if (textual) return;
-
-    // сброс предыдущего blob URL
-    if (revokeRef.current) {
-      URL.revokeObjectURL(revokeRef.current);
-      revokeRef.current = null;
+    if (forceText && !forceValue && content) {
+      try {
+        const initial = decodeBase64ToUtf8(content);
+        setForceValue(initial);
+      } catch (e) {
+        setForceValue("");
+        // eslint-disable-next-line no-console
+        console.warn("Failed to decode to UTF-8, opening empty buffer");
+      }
     }
-    setBlobUrl(null);
+  }, [forceText, forceValue, content]);
 
-    if (!path || !content) return;
+  useEffect(() => {
+    if (textual || forceText) {
+      if (revokeRef.current) {
+        URL.revokeObjectURL(revokeRef.current);
+        revokeRef.current = null;
+      }
+      setBlobUrl(null);
+      return;
+    }
+
+    if (!path || !content) {
+      // если контента нет — убедимся, что блоба тоже нет
+      if (revokeRef.current) {
+        URL.revokeObjectURL(revokeRef.current);
+        revokeRef.current = null;
+      }
+      setBlobUrl(null);
+      return;
+    }
 
     try {
       const type = contentTypeByExt(e);
-      // content — это base64 без префикса data:
-      const bytes = base64ToUint8
-        ? base64ToUint8(content)
-        : base64ToUint8Local(content);
-
-      const buf = bytes instanceof Uint8Array ? bytes.buffer : bytes;
-      const url = URL.createObjectURL(new Blob([buf as any], { type }));
-
+      const bytes = (
+        base64ToUint8 ? base64ToUint8(content) : base64ToUint8Local(content)
+      ) as Uint8Array;
+      const bufAb = bytes.buffer as ArrayBuffer;
+      const url = URL.createObjectURL(new Blob([bufAb], { type }));
+      // чистим предыдущий blob
+      if (revokeRef.current) URL.revokeObjectURL(revokeRef.current);
       revokeRef.current = url;
       setBlobUrl(url);
     } catch (err) {
       console.error("Failed to build blob url from base64:", err);
+      if (revokeRef.current) {
+        URL.revokeObjectURL(revokeRef.current);
+        revokeRef.current = null;
+      }
+      setBlobUrl(null);
     }
 
-    // cleanup на размонтировании/смене файла
     return () => {
       if (revokeRef.current) {
         URL.revokeObjectURL(revokeRef.current);
@@ -113,7 +155,7 @@ export const EditorPanel: React.FC = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [path, textual, e, content]);
+  }, [path, textual, e, content, forceText]);
 
   if (!path)
     return (
@@ -131,11 +173,22 @@ export const EditorPanel: React.FC = () => {
     );
   }
 
-  if (textual) {
+  if (textual || forceText) {
+    const valueForEditor = forceText ? forceValue : buf;
+    const onChangeEditor = (next: string) => {
+      if (forceText) setForceValue(next);
+      setBuf(next);
+    };
+
     return (
       <div className="flex flex-col min-h-0 h-full">
         <div className="h-8 px-2 border-b text-xs flex items-center gap-2">
           <span className="truncate">{path}</span>
+          {forceText && (
+            <span className="ml-2 px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
+              {t("editor.openForced", "Opened in editor (forced)")}
+            </span>
+          )}
           <div className="ml-auto flex items-center gap-2">
             {dirty && (
               <Button
@@ -161,8 +214,8 @@ export const EditorPanel: React.FC = () => {
         <div className="flex-1 min-h-0">
           <CodeEditor
             path={path}
-            value={buf}
-            onChange={setBuf}
+            value={valueForEditor}
+            onChange={onChangeEditor}
             formatOnOpen={formatOnOpen}
           />
         </div>
@@ -170,7 +223,6 @@ export const EditorPanel: React.FC = () => {
     );
   }
 
-  // Binary previews
   if (content && isImage && blobUrl) {
     if (e === "svg") {
       return (
@@ -222,10 +274,30 @@ export const EditorPanel: React.FC = () => {
     );
 
   return (
-    <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-      {t("editor.Thistypeisnotyetsupportedforapreexamination")}
+    <div className="h-full flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
+      <div>{t("editor.Thistypeisnotyetsupportedforapreexamination")}</div>
+      <Button
+        size="sm"
+        variant="secondary"
+        className="h-7 px-3"
+        onClick={() => {
+          if (revokeRef.current) {
+            URL.revokeObjectURL(revokeRef.current);
+            revokeRef.current = null;
+          }
+          setBlobUrl(null);
 
-      
+          if (content) {
+            const initial = decodeBase64ToUtf8(content);
+            setForceValue(initial);
+          } else {
+            setForceValue("");
+          }
+          setForceText(true);
+        }}
+      >
+        {t("editor.openInEditor", "Open in editor")}
+      </Button>
     </div>
   );
 };

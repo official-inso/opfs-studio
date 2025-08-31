@@ -37,7 +37,9 @@
     "Rollupdisruptededitstothelatestversionfromthedisk": "撤销未保存的更改并恢复为磁盘上的最新版本",
     "Rollowchanges": "撤销更改",
     "Thistypeisnotyetsupportedforapreexamination": "此文件类型暂不支持预览。",
-    "Loading": "正在加载，打开文件"
+    "Loading": "正在加载，打开文件",
+    "openInEditor": "在编辑器中打开",
+    "openForced": "在编辑器中打开（强制）"
   },
   "modals": {
     "Createafile": "创建文件",

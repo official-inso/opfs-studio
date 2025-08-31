@@ -37,7 +37,9 @@
     "Rollupdisruptededitstothelatestversionfromthedisk": "Откатить несохранённые правки к последней версии с диска",
     "Rollowchanges": "Откатить изменения",
     "Thistypeisnotyetsupportedforapreexamination": "Этот тип пока не поддерживается для предпросмотра.",
-    "Loading": "Загрузка, открываем файл"
+    "Loading": "Загрузка, открываем файл",
+    "openInEditor": "Открыть в редакторе",
+    "openForced": "Открыто в редакторе (принудительно)"
   },
   "modals": {
     "Createafile": "Создать файл",

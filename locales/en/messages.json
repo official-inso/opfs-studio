@@ -37,7 +37,9 @@
     "Rollupdisruptededitstothelatestversionfromthedisk": "Revert unsaved changes to the latest version from disk",
     "Rollowchanges": "Revert changes",
     "Thistypeisnotyetsupportedforapreexamination": "This file type is not yet supported for preview.",
-    "Loading": "Loading, opening file"
+    "Loading": "Loading, opening file",
+    "openInEditor": "Open in editor",
+    "openForced": "Opened in editor (forced)"
   },
   "modals": {
     "Createafile": "Create a file",

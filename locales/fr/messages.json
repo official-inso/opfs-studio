@@ -37,7 +37,9 @@
     "Rollupdisruptededitstothelatestversionfromthedisk": "Annuler les modifications non enregistrées et revenir à la dernière version du disque",
     "Rollowchanges": "Annuler les modifications",
     "Thistypeisnotyetsupportedforapreexamination": "Ce type de fichier n’est pas encore pris en charge pour l’aperçu.",
-    "Loading": "Chargement, ouverture du fichier"
+    "Loading": "Chargement, ouverture du fichier",
+    "openInEditor": "Ouvrir dans l’éditeur",
+    "openForced": "Ouvert dans l’éditeur (forcé)"
   },
   "modals": {
     "Createafile": "Créer un fichier",

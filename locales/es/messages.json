@@ -37,7 +37,9 @@
     "Rollupdisruptededitstothelatestversionfromthedisk": "Ungespeicherte Änderungen verwerfen und letzte Version vom Datenträger laden",
     "Rollowchanges": "Änderungen verwerfen",
     "Thistypeisnotyetsupportedforapreexamination": "Dieser Dateityp wird für die Vorschau noch nicht unterstützt.",
-    "Loading": "Cargando, abriendo archivo"
+    "Loading": "Cargando, abriendo archivo",
+    "openInEditor": "Abrir en el editor",
+    "openForced": "Abierto en el editor (forzado)"
   },
   "modals": {
     "Createafile": "Datei erstellen",
