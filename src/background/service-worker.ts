@@ -6,6 +6,9 @@ const panelPorts = new Set<chrome.runtime.Port>();
 
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "panel") {
+    const isDevtools = Boolean(port.sender?.url?.includes("devtools.html"));
+    (port as any).isDevtools = isDevtools;
+
     panelPorts.add(port);
     port.onDisconnect.addListener(() => panelPorts.delete(port));
   }
@@ -19,7 +22,9 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (changeInfo.status === "complete") {
     for (const p of panelPorts) {
-      // p.sender?.tab?.id есть у side panel и devtools панели
+      // если это devtools-порт — игнорируем смену вкладки
+      if ((p as any).isDevtools) continue;
+
       if (p.sender?.tab?.id === tabId) {
         try {
           p.postMessage({ type: "tab:reloaded", tabId });
