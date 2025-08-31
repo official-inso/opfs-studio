@@ -124,6 +124,14 @@ function AppContent() {
       return;
     }
 
+    if (msg.kind === "remove-result") {
+      const { path } = msg.data as { path: string };
+      const state = useUI.getState();
+      state.removePath(path);
+
+      return;
+    }
+
     if (msg.kind === "write-result") {
       const { path } = msg.data as { path: string };
       const st = useUI.getState();

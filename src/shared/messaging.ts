@@ -29,7 +29,8 @@ export interface MsgFromContent {
     | "create-result"
     | "rename-result"
     | "error"
-    | "open-panel";
+    | "open-panel"
+    | "remove-result";
   data:
     | null
     | { watching: boolean }
@@ -40,10 +41,12 @@ export interface MsgFromContent {
     | { path: FilePath; ok: true; size: number; lastModified: number }
     | { ok: true; path: FilePath }
     | { ok: true; from: FilePath; to: FilePath }
-    | { message: string };
+    | { message: string }
+    | { ok: true; path: FilePath }
 }
 
 export type ReadRequest = { path: FilePath };
+export type RemoveRequest = { path: FilePath, recursive: boolean };
 export type WriteRequest = {
   path: FilePath;
   content: FileText;
@@ -72,7 +75,8 @@ export interface MsgToContent {
     | "create-file"
     | "create-dir"
     | "rename-path"
-    | "tab-unloaded";
+    | "tab-unloaded"
+    | "remove-path";
   data:
     | null
     | ReadRequest
@@ -80,5 +84,6 @@ export interface MsgToContent {
     | WriteBytesRequest
     | CreateFileRequest
     | CreateDirRequest
-    | RenameRequest;
+    | RenameRequest
+    | RemoveRequest;
 }

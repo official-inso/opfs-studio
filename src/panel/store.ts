@@ -85,6 +85,8 @@ export interface UIState {
   uploadFiles: (files: FileList) => Promise<void>;
   uploadFolder: (files: FileList) => Promise<void>;
 
+  removePath: (path: string, recursive?: boolean) => Promise<void>;
+
   savePath: (path: string) => Promise<void>;
   saveAll: () => Promise<void>;
 
@@ -296,11 +298,33 @@ export const useUI = create<UIState>((set, get) => ({
     set(updates);
   },
 
+  removePath: async (path, recursive = false) => {
+    await get().send({ kind: "remove-path", data: { path, recursive } });
+    try {
+      const res = await get().send<{
+        ok?: boolean;
+        error?: string;
+        path?: string;
+      }>({
+        kind: "remove-path",
+        data: { path, recursive },
+      });
+
+      if (get().currentPath === path) {
+        set({ currentPath: null, buffer: "" });
+      }
+      await get().send({ kind: "list", data: null });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to remove: ${msg}`);
+      console.error("[ui] remove-path exception:", err);
+    }
+  },
+
   startOpenWatchdog: (path, timeoutMs = 2000) => {
     const prev = get().openWatchdogId;
     if (prev != null) window.clearTimeout(prev);
-    const id = window.setTimeout(() => {
-    }, timeoutMs);
+    const id = window.setTimeout(() => {}, timeoutMs);
     set({ openInProgressFor: path, openWatchdogId: id });
   },
 
@@ -441,9 +465,7 @@ export const useUI = create<UIState>((set, get) => ({
     const lastDiskPrev = get().lastDisk[path];
 
     const nextLastDisk =
-      typeof curr === "string"
-        ? curr.replace(/\r\n?/g, "\n")
-        : undefined;
+      typeof curr === "string" ? curr.replace(/\r\n?/g, "\n") : undefined;
 
     set({
       tree,

@@ -21,7 +21,8 @@
     "created": "Créé",
     "renamed": "Renommé",
     "ready": "Scripts de contenu prêts",
-    "OPFSempty": "OPFS est vide"
+    "OPFSempty": "OPFS est vide",
+    "deleted": "Supprimé"
   },
   "conflict": {
     "Thefileischangedoutside": "Le fichier a été modifié à l’extérieur",
@@ -50,7 +51,13 @@
     "From": "De",
     "TO": "À",
     "Cancellation": "Annuler",
-    "Rename": "Renommer"
+    "Rename": "Renommer",
+    "Delete": "Supprimer",
+    "DeleteFileTitle": "Supprimer le fichier",
+    "DeleteFolderTitle": "Supprimer le dossier",
+    "DeleteFileDesc": "Cette action supprimera le fichier.",
+    "DeleteFolderDesc": "Cette action supprimera le dossier. Vous pouvez le supprimer récursivement avec tout son contenu.",
+    "DeleteRecursively": "Supprimer récursivement"
   },
   "donate": {
     "button": "Donner",

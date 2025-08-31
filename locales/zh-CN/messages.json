@@ -21,7 +21,8 @@
     "created": "已创建",
     "renamed": "已重命名",
     "ready": "内容脚本已准备就绪",
-    "OPFSempty": "OPFS 为空"
+    "OPFSempty": "OPFS 为空",
+    "deleted": "已删除"
   },
   "conflict": {
     "Thefileischangedoutside": "文件已在外部修改",
@@ -50,7 +51,13 @@
     "From": "从",
     "TO": "到",
     "Cancellation": "取消",
-    "Rename": "重命名"
+    "Rename": "重命名",
+    "Delete": "删除",
+    "DeleteFileTitle": "删除文件",
+    "DeleteFolderTitle": "删除文件夹",
+    "DeleteFileDesc": "此操作将删除该文件。",
+    "DeleteFolderDesc": "此操作将删除该文件夹。您可以选择递归删除其中的所有内容。",
+    "DeleteRecursively": "递归删除"
   },
   "donate": {
     "button": "捐助",

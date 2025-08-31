@@ -3,6 +3,7 @@ import type {
   MsgFromContent,
   MsgToContent,
   OpfsSnapshot,
+  RemoveRequest,
 } from "../shared/messaging";
 import type { WatchOptions } from "../shared/types";
 import {
@@ -16,6 +17,7 @@ import {
   renamePath,
   readBytes,
   getRoot,
+  removePath,
 } from "./opfs-watcher";
 
 let watchTimer: number | null = null;
@@ -87,6 +89,37 @@ chrome.runtime.onMessage.addListener(
             sendResponse({ ok: true });
             break;
           }
+          case "remove-path": {
+            try {
+              const { path, recursive } = (msg.data ?? {}) as {
+                path?: string;
+                recursive?: boolean;
+              };
+              if (!path) throw new DOMException("Path is empty", "SyntaxError");
+
+              await removePath(path, Boolean(recursive));
+
+              const snap2 = await takeSnapshot(defaultOptions);
+              latest = snap2;
+              post({ kind: "snapshot", data: snap2 });
+              // post({ kind: "remove-result", data: { ok: true, path } });
+
+              sendResponse({ ok: true, path });
+            } catch (e) {
+              let message = "Unknown";
+              if (e instanceof DOMException)
+                message = `${e.name}: ${e.message}`;
+              else if (e instanceof Error)
+                message = `${e.name || "Error"}: ${e.message}`;
+              else message = String(e);
+
+              console.error("[cs] remove-path failed:", { error: message });
+              sendResponse({ ok: false, error: message });
+            }
+            
+            break;
+          }
+
           case "read-file": {
             const { path } = msg.data as { path: string };
             const content = await readText(path);
@@ -211,8 +244,13 @@ chrome.runtime.onMessage.addListener(
             sendResponse({ ok: true });
             break;
           }
-          default:
-            sendResponse({ ok: false });
+          default: {
+            sendResponse({
+              ok: false,
+              error: `Unknown kind: ${String((msg as any)?.kind)}`,
+            });
+            break;
+          }
         }
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);

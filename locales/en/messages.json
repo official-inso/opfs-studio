@@ -21,7 +21,8 @@
     "created": "Created",
     "renamed": "Renamed",
     "ready": "Content scripts ready",
-    "OPFSempty": "OPFS is empty"
+    "OPFSempty": "OPFS is empty",
+    "deleted": "Deleted"
   },
   "conflict": {
     "Thefileischangedoutside": "The file was modified externally",
@@ -50,10 +51,16 @@
     "From": "From",
     "TO": "To",
     "Cancellation": "Cancel",
-    "Rename": "Rename"
+    "Rename": "Rename",
+    "Delete": "Delete",
+    "DeleteFileTitle": "Delete file",
+    "DeleteFolderTitle": "Delete folder",
+    "DeleteFileDesc": "This action will delete the file.",
+    "DeleteFolderDesc": "This action will delete the folder. You can remove it recursively with all contents.",
+    "DeleteRecursively": "Delete recursively"
   },
   "donate": {
-    "button": "Donate",
+    "button": "Support the project",
     "title": "Support the project",
     "region": "Your region",
     "note": "All payments are processed on external provider pages. No card data is handled by the extension.",

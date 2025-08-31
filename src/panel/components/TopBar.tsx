@@ -245,7 +245,7 @@ export const TopBar: React.FC = () => {
                 },
               }).then(() => {
                 markSaved(currentPath);
-                toast.success(`${t("topbar.saveSuccess")}: ${currentPath}`);
+                // toast.success(`${t("topbar.saveSuccess")}: ${currentPath}`);
                 trackEvent("save");
               });
             }}

@@ -23,6 +23,56 @@ export async function getRoot(): Promise<DirHandle> {
   return storage.getDirectory();
 }
 
+export async function removePath(
+  path: string,
+  recursive: boolean = false
+): Promise<void> {
+  if (!path || path === "/" || path === ".") {
+    throw new DOMException(
+      "Root cannot be removed",
+      "InvalidModificationError"
+    );
+  }
+
+  const clean = path
+    .replace(/\\/g, "/")
+    .replace(/^\.?\//, "")
+    .replace(/^\/+/, "");
+
+  const parts = clean.split("/").filter(Boolean);
+  const name = parts.pop()!;
+  const root = await getRoot();
+
+  let dir: FileSystemDirectoryHandle = root;
+  for (const seg of parts) {
+    dir = await dir.getDirectoryHandle(seg, { create: false });
+  }
+
+  let hasError = false;
+  let dataError: any;
+
+  try {
+    await dir.getFileHandle(name, { create: false });
+    await dir.removeEntry(name, { recursive: false });
+    return;
+  } catch (e) {
+    const de = e as DOMException;
+    dataError = e;
+    hasError = true;
+  }
+
+  try {
+    await dir.getDirectoryHandle(name, { create: false });
+    await dir.removeEntry(name, { recursive });
+    return;
+  } catch (e) {
+    hasError = true;
+    dataError = e;
+  }
+
+}
+
+
 export async function readMeta(
   handle: FileHandle | DirHandle,
   path: string

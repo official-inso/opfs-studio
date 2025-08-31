@@ -15,7 +15,7 @@ import {
   type FileNode,
   type DirNode,
 } from "../store";
-import { RenameDialog } from "./Modals";
+import { DeleteDialog, RenameDialog } from "./Modals";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "react-i18next";
@@ -62,6 +62,7 @@ const DirRow: React.FC<{ depth: number; d: DirNode }> = ({ depth, d }) => {
           data-actions
         >
           <RenameDialog from={d.path} />
+          <DeleteDialog path={d.path} isDirectory={true} />
         </div>
       </div>
       {!d.collapsed &&
@@ -88,14 +89,14 @@ const FileRow: React.FC<{ depth: number; f: FileNode }> = ({ depth, f }) => {
       style={{ paddingLeft: (depth + 1) * 12 }}
       onClick={(e) => {
         e.preventDefault();
-        openFile(f.path)
+        openFile(f.path);
       }}
     >
       {fileIcon(f)}
       <button
         onClick={(e) => {
           e.preventDefault();
-          openFile(f.path)
+          openFile(f.path);
         }}
         className="text-left flex-1 truncate"
         title={info}
@@ -107,6 +108,7 @@ const FileRow: React.FC<{ depth: number; f: FileNode }> = ({ depth, f }) => {
       </button>
       <div className="opacity-0 group-hover:opacity-100 transition-opacity">
         <RenameDialog from={f.path} />
+        <DeleteDialog path={f.path} isDirectory={false} />
       </div>
     </div>
   );

@@ -21,7 +21,8 @@
     "created": "Erstellt",
     "renamed": "Umbenannt",
     "ready": "Content-Skripte bereit",
-    "OPFSempty": "OPFS ist leer"
+    "OPFSempty": "OPFS ist leer",
+    "deleted": "Gelöscht"
   },
   "conflict": {
     "Thefileischangedoutside": "Die Datei wurde extern geändert",
@@ -50,7 +51,13 @@
     "From": "Von",
     "TO": "Nach",
     "Cancellation": "Abbrechen",
-    "Rename": "Umbenennen"
+    "Rename": "Umbenennen",
+    "Delete": "Eliminar",
+    "DeleteFileTitle": "Eliminar archivo",
+    "DeleteFolderTitle": "Eliminar carpeta",
+    "DeleteFileDesc": "Esta acción eliminará el archivo.",
+    "DeleteFolderDesc": "Esta acción eliminará la carpeta. Puede eliminarla de forma recursiva junto con todo su contenido.",
+    "DeleteRecursively": "Eliminar recursivamente"
   },
   "donate": {
     "button": "Donar",

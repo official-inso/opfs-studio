@@ -21,7 +21,8 @@
     "created": "作成済み",
     "renamed": "名前を変更しました",
     "ready": "コンテンツスクリプトの準備完了",
-    "OPFSempty": "OPFS は空です"
+    "OPFSempty": "OPFS は空です",
+    "deleted": "削除済み"
   },
   "conflict": {
     "Thefileischangedoutside": "ファイルが外部で変更されました",
@@ -50,7 +51,13 @@
     "From": "から",
     "TO": "へ",
     "Cancellation": "キャンセル",
-    "Rename": "名前を変更"
+    "Rename": "名前を変更",
+    "Delete": "削除",
+    "DeleteFileTitle": "ファイルを削除",
+    "DeleteFolderTitle": "フォルダを削除",
+    "DeleteFileDesc": "この操作でファイルが削除されます。",
+    "DeleteFolderDesc": "この操作でフォルダが削除されます。中身を含めて再帰的に削除できます。",
+    "DeleteRecursively": "再帰的に削除"
   },
   "donate": {
     "button": "寄付する",

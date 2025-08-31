@@ -29,7 +29,8 @@
     "Replacethecontentsofthedisk": "Reemplazar con contenido del disco",
     "Leavemyedits": "Mantener mis ediciones",
     "Mergingchanges": "Fusionando cambios",
-    "Applyunited": "Aplicar fusión"
+    "Applyunited": "Aplicar fusión",
+    "deleted": "Eliminado"
   },
   "editor": {
     "Selectthefile": "Seleccione un archivo",
@@ -50,7 +51,13 @@
     "From": "De",
     "TO": "A",
     "Cancellation": "Cancelar",
-    "Rename": "Renombrar"
+    "Rename": "Renombrar",
+    "Delete": "Löschen",
+    "DeleteFileTitle": "Datei löschen",
+    "DeleteFolderTitle": "Ordner löschen",
+    "DeleteFileDesc": "Diese Aktion wird die Datei löschen.",
+    "DeleteFolderDesc": "Diese Aktion wird den Ordner löschen. Sie können ihn rekursiv mit allen Inhalten entfernen.",
+    "DeleteRecursively": "Rekursiv löschen"
   },
   "donate": {
     "button": "Spenden",
