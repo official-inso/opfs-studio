@@ -11,6 +11,7 @@ import {
   FilePlay,
   FileJson,
   FileCode,
+  FolderOpen,
 } from "lucide-react";
 import {
   useUI,
@@ -48,7 +49,7 @@ const DirRow: React.FC<{ depth: number; d: DirNode }> = ({ depth, d }) => {
   return (
     <>
       <div
-        className="group flex items-center justify-between px-2 py-1 hover:bg-muted rounded-sm cursor-pointer"
+        className="group flex items-center justify-between px-2 py-1 hover:bg-muted rounded-sm cursor-pointer min-h-[32px]"
         style={{ paddingLeft: depth * 12 }}
         onClick={(e) => {
           const target = e.target as HTMLElement;
@@ -56,19 +57,16 @@ const DirRow: React.FC<{ depth: number; d: DirNode }> = ({ depth, d }) => {
           toggleDir(d.path);
         }}
       >
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-1 min-w-0">
           {d.collapsed ? (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 shrink-0" />
           ) : (
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="h-4 w-4 shrink-0" />
           )}
-          <Folder className="h-4 w-4 text-yellow-400" />
-          <span className="ml-1">{d.name || "/"}</span>
+          <Folder className="h-4 w-4 text-yellow-400 shrink-0" />
+          <span className="ml-1 truncate">{d.name || "/"}</span>
         </div>
-        <div
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-          data-actions
-        >
+        <div className="hidden group-hover:flex shrink-0 ml-2">
           <RenameDialog from={d.path} />
           <DeleteDialog path={d.path} isDirectory={true} />
         </div>
@@ -122,15 +120,15 @@ const FileRow: React.FC<{ depth: number; f: FileNode }> = ({ depth, f }) => {
           e.preventDefault();
           openFile(f.path);
         }}
-        className="text-left flex-1 truncate"
+        className="text-left flex-1 min-w-0 truncate"
         title={info}
       >
-        <div className="text-sm leading-4">{f.name}</div>
-        <div className="text-[10px] text-muted-foreground leading-3">
+        <div className="text-sm leading-4 truncate">{f.name}</div>
+        <div className="text-[10px] text-muted-foreground leading-3 truncate">
           {f.ext || "file"} • {info}
         </div>
       </button>
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="hidden group-hover:flex shrink-0 ml-2">
         <RenameDialog from={f.path} />
         <DeleteDialog path={f.path} isDirectory={false} />
       </div>
@@ -152,14 +150,19 @@ export const FileTree: React.FC = () => {
   const { t } = useTranslation();
   const tree = useUI((s) => s.tree);
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full w-full test123">
       <div className="p-1">
         {tree.length === 0 ? (
-          <div className="text-xs text-muted-foreground px-2 py-1">
+          <div className="h-full flex-1 text-center text-xs text-muted-foreground px-2 py-1 flex items-center gap-1 flex-col justify-center">
+            <FolderOpen className="h-4 w-4" />
             {t("panel.OPFSempty")}
           </div>
         ) : (
-          tree.map((n) => <Row key={n.id} depth={0} node={n} />)
+          <div className="flex flex-col gap-[2px]">
+            {tree.map((n) => (
+              <Row key={n.id} depth={0} node={n} />
+            ))}
+          </div>
         )}
       </div>
     </ScrollArea>

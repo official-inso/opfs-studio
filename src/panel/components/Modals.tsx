@@ -154,7 +154,7 @@ export const RenameDialog: React.FC<{ from: string; onDone?: () => void }> = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" size="icon" title={t("modals.Rename")}>
+        <Button variant="secondary" size="icon" title={t("modals.Rename")} className="h-6 w-6">
           <Pencil className="h-3 w-3" />
         </Button>
       </DialogTrigger>
@@ -218,15 +218,18 @@ export const DeleteDialog: React.FC<{
           variant="destructive"
           size="icon"
           title={t("modals.Delete", "Delete")}
+          className="h-6 w-6"
         >
           <Trash2 className="h-3 w-3" />
         </Button>
       </DialogTrigger>
 
-      <DialogContent onClick={(e) => {
-        e.stopPropagation()
-        e.preventDefault();
-      }}>
+      <DialogContent
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
             {isDirectory
