@@ -73,5 +73,17 @@
     "region": "あなたの地域",
     "note": "すべての支払いは外部プロバイダーのページで処理されます。拡張機能はカード情報を扱いません。",
     "russia": "ロシアとSSR"
+  },
+  "welcome": {
+    "title": "OPFS Studio へようこそ",
+    "subtitle": "OPFS Studio は、ブラウザー上で Origin Private File System を直接確認・編集・管理できます。",
+    "points": {
+      "browse": "現在のサイトの OPFS をリアルタイムで閲覧",
+      "editor": "Monaco エディターで編集（整形・シンタックスハイライト）",
+      "watcher": "外部変更を監視し、競合を解決",
+      "manage": "ファイルやフォルダーの作成・名前変更・アップロード・削除"
+    },
+    "autostartWatch": "自動で監視を開始する",
+    "getStarted": "はじめる"
   }
 }

@@ -4,6 +4,7 @@ import type {
   OpfsSnapshot,
   WatchEvent,
 } from "../shared/messaging";
+import { WelcomeDialog, WELCOME_LS_KEY } from "./components/WelcomeDialog";
 import { usePanelPort } from "./hooks/usePort";
 import { useUI } from "./store";
 import { FileTree } from "./components/FileTree";
@@ -76,6 +77,7 @@ function AppContent() {
   const watching = useUI((s) => s.watching);
   const stopOpenWatchdog = useUI((s) => s.stopOpenWatchdog);
   const { t } = useTranslation();
+  const [welcomeOpen, setWelcomeOpen] = useState<boolean>(false);
 
   const onPanelMessage = async (raw: unknown): Promise<void> => {
     const msg = raw as MsgFromContent;
@@ -180,6 +182,15 @@ function AppContent() {
     }
   };
 
+  useEffect(() => {
+    try {
+      const v = window.localStorage.getItem(WELCOME_LS_KEY);
+      if (!v) setWelcomeOpen(true);
+    } catch {
+      setWelcomeOpen(true);
+    }
+  }, []);
+
   usePanelPort((m) => {
     void onPanelMessage(m);
   });
@@ -237,6 +248,10 @@ function AppContent() {
         </div>
         <StatusBar />
         <Toaster position="bottom-right" richColors />
+        <WelcomeDialog
+          open={welcomeOpen}
+          onOpenChange={setWelcomeOpen}
+        />
       </div>
     </TooltipProvider>
   );

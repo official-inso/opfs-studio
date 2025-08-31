@@ -73,5 +73,17 @@
     "region": "Tu región",
     "note": "Todos los pagos se procesan en páginas externas de proveedores. La extensión no maneja datos de tarjetas.",
     "russia": "Rusia y el Oriente Medio"
+  },
+  "welcome": {
+    "title": "Bienvenido a OPFS Studio",
+    "subtitle": "OPFS Studio te ayuda a inspeccionar, editar y gestionar el Origin Private File System directamente desde tu navegador.",
+    "points": {
+      "browse": "Explora en tiempo real el OPFS del sitio actual",
+      "editor": "Edita con el editor Monaco (formato y resaltado de sintaxis)",
+      "watcher": "Supervisa cambios externos con resolución de conflictos",
+      "manage": "Crea, renombra, sube y elimina archivos y carpetas"
+    },
+    "autostartWatch": "Iniciar la supervisión automáticamente",
+    "getStarted": "Empezar"
   }
 }

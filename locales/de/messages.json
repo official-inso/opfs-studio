@@ -72,5 +72,17 @@
     "title": "Unterstütze das Projekt",
     "region": "Ihre Region",
     "note": "Alle Zahlungen werden auf externen Anbieterseiten verarbeitet. Keine Kartendaten werden von der Erweiterung verarbeitet."
+  },
+  "welcome": {
+    "title": "Willkommen bei OPFS Studio",
+    "subtitle": "OPFS Studio hilft dir, das Origin Private File System direkt im Browser zu untersuchen, zu bearbeiten und zu verwalten.",
+    "points": {
+      "browse": "Durchsuche das OPFS der aktuellen Website in Echtzeit",
+      "editor": "Bearbeite Dateien mit dem Monaco-Editor (Formatierung & Syntaxhervorhebung)",
+      "watcher": "Überwache externe Änderungen mit Konfliktlösung",
+      "manage": "Erstelle, benenne um, lade hoch und lösche Dateien und Ordner"
+    },
+    "autostartWatch": "Überwachung automatisch starten",
+    "getStarted": "Los geht’s"
   }
 }

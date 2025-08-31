@@ -73,5 +73,17 @@
     "region": "您的地区",
     "note": "所有支付均在外部提供商页面处理。扩展程序不会处理任何银行卡数据。",
     "russia": "俄罗斯和中东地区"
+  },
+  "welcome": {
+    "title": "欢迎使用 OPFS Studio",
+    "subtitle": "OPFS Studio 帮助你在浏览器中直接查看、编辑和管理 Origin Private File System。",
+    "points": {
+      "browse": "实时浏览当前站点的 OPFS 内容",
+      "editor": "使用 Monaco 编辑器进行编辑（语法高亮与格式化）",
+      "watcher": "监控外部更改并处理冲突",
+      "manage": "创建、重命名、上传与删除文件和文件夹"
+    },
+    "autostartWatch": "自动开始监控",
+    "getStarted": "开始使用"
   }
 }

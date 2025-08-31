@@ -73,5 +73,17 @@
     "region": "Votre région",
     "note": "Tous les paiements sont traités sur les pages externes des prestataires. Aucune donnée de carte n’est gérée par l’extension.",
     "russia": "Russie et pays du Moyen-Orient"
+  },
+  "welcome": {
+    "title": "Bienvenue dans OPFS Studio",
+    "subtitle": "OPFS Studio vous aide à inspecter, modifier et gérer l’Origin Private File System directement depuis votre navigateur.",
+    "points": {
+      "browse": "Parcourez en temps réel l’OPFS du site actuel",
+      "editor": "Modifiez avec l’éditeur Monaco (mise en forme et surlignage syntaxique)",
+      "watcher": "Surveillez les changements externes avec résolution des conflits",
+      "manage": "Créez, renommez, importez et supprimez des fichiers et dossiers"
+    },
+    "autostartWatch": "Démarrer la surveillance automatiquement",
+    "getStarted": "Commencer"
   }
 }
