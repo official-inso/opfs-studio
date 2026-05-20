@@ -6,6 +6,8 @@ export interface OpfsFileMeta {
   size: number;
   lastModified: number;
   isDirectory: boolean;
+  /** Optional FNV-1a hash of file content; only set for small files (<= HASH_FILE_LIMIT). */
+  hash?: number;
 }
 export interface OpfsSnapshot {
   files: OpfsFileMeta[];

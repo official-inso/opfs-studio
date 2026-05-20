@@ -13,6 +13,16 @@ interface StorageManagerWithDirectory extends StorageManager {
   getDirectory(): Promise<DirHandle>;
 }
 
+interface DirIter {
+  entries(): AsyncIterable<[string, FSHandle]>;
+}
+interface DirKeys {
+  keys(): AsyncIterable<string>;
+}
+
+export const HASH_FILE_LIMIT = 1024 * 1024;
+export const READ_BYTES_LIMIT = 256 * 1024 * 1024;
+
 export async function getRoot(): Promise<DirHandle> {
   const storage = navigator.storage as StorageManagerWithDirectory | undefined;
   if (!storage || typeof storage.getDirectory !== "function") {
@@ -48,17 +58,14 @@ export async function removePath(
     dir = await dir.getDirectoryHandle(seg, { create: false });
   }
 
-  let hasError = false;
-  let dataError: any;
+  let lastError: DOMException | Error | null = null;
 
   try {
     await dir.getFileHandle(name, { create: false });
     await dir.removeEntry(name, { recursive: false });
     return;
   } catch (e) {
-    const de = e as DOMException;
-    dataError = e;
-    hasError = true;
+    lastError = e instanceof Error ? e : new Error(String(e));
   }
 
   try {
@@ -66,9 +73,20 @@ export async function removePath(
     await dir.removeEntry(name, { recursive });
     return;
   } catch (e) {
-    hasError = true;
-    dataError = e;
+    lastError = e instanceof Error ? e : new Error(String(e));
   }
+
+  throw lastError ?? new DOMException(`Cannot remove "${path}"`, "NotFoundError");
+}
+
+/** FNV-1a 32-bit hash. Fast, non-cryptographic, sufficient for diff. */
+function fnv1a(buf: Uint8Array): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < buf.length; i++) {
+    h ^= buf[i]!;
+    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+  }
+  return h;
 }
 
 export async function readMeta(
@@ -79,19 +97,21 @@ export async function readMeta(
   if (kind === "directory")
     return { path, size: 0, lastModified: 0, isDirectory: true };
   const file = await (handle as FileHandle).getFile();
-  return {
+  const meta: OpfsFileMeta = {
     path,
     size: file.size,
     lastModified: file.lastModified,
     isDirectory: false,
   };
-}
-
-interface DirIter {
-  entries(): AsyncIterable<[string, FSHandle]>;
-}
-interface DirKeys {
-  keys(): AsyncIterable<string>;
+  if (file.size > 0 && file.size <= HASH_FILE_LIMIT) {
+    try {
+      const buf = new Uint8Array(await file.arrayBuffer());
+      meta.hash = fnv1a(buf);
+    } catch {
+      // ignore hash failure; diff falls back to size+mtime
+    }
+  }
+  return meta;
 }
 
 export async function listRecursive(
@@ -167,10 +187,22 @@ export function diffSnapshots(
     const mn = n.get(path);
     if (!mn) {
       if (!mp.isDirectory) events.push({ type: "removed", meta: mp });
-    } else if (
-      !mn.isDirectory &&
-      (mp.size !== mn.size || mp.lastModified !== mn.lastModified)
+      continue;
+    }
+    if (mn.isDirectory) continue;
+    if (mp.size !== mn.size) {
+      events.push({ type: "modified", meta: mn });
+      continue;
+    }
+    if (
+      mp.hash !== undefined &&
+      mn.hash !== undefined &&
+      mp.hash === mn.hash
     ) {
+      // same size + same content hash → ignore timestamp-only changes
+      continue;
+    }
+    if (mp.lastModified !== mn.lastModified) {
       events.push({ type: "modified", meta: mn });
     }
   }
@@ -333,24 +365,38 @@ export async function readBytes(path: string): Promise<string> {
     dir = await dir.getDirectoryHandle(parts[i]!);
   const fh = await dir.getFileHandle(parts.at(-1)!);
   const file = await fh.getFile();
-  return _arrayBufferToBase64(await file.arrayBuffer());
+  if (file.size > READ_BYTES_LIMIT) {
+    throw new DOMException(
+      `File too large for read-bytes: ${file.size}B (limit ${READ_BYTES_LIMIT}B)`,
+      "QuotaExceededError"
+    );
+  }
+  return await blobToBase64(file);
 }
 
-function _arrayBufferToBase64(buffer: ArrayBuffer) {
-  var binary = "";
-  var bytes = new Uint8Array(buffer);
-  var len = bytes.byteLength;
-  for (var i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("FileReader error"));
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("FileReader returned non-string result"));
+        return;
+      }
+      const idx = result.indexOf(",");
+      resolve(idx >= 0 ? result.slice(idx + 1) : result);
+    };
+    reader.readAsDataURL(blob);
+  });
 }
 
 export async function getBlobUrl(path: string, type: string): Promise<string> {
-  const storage = await (navigator.storage as any).getDirectory();
+  const root = await getRoot();
   const parts = path.split("/").filter(Boolean);
   const name = parts.pop()!;
-  let dir = storage;
+  let dir: DirHandle = root;
   for (const seg of parts) {
     dir = await dir.getDirectoryHandle(seg);
   }

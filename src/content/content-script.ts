@@ -2,12 +2,9 @@ import { base64ToUint8 } from "@/shared/base64";
 import type {
   MsgFromContent,
   MsgToContent,
-  OpfsSnapshot,
-  RemoveRequest,
 } from "../shared/messaging";
 import type { WatchOptions } from "../shared/types";
 import {
-  diffSnapshots,
   takeSnapshot,
   readText,
   writeText,
@@ -19,13 +16,10 @@ import {
   getRoot,
   removePath,
 } from "./opfs-watcher";
+import { createWatchLoop } from "./watch-loop";
 
-let watchTimer: number | null = null;
-let latest: OpfsSnapshot | null = null;
-let watching = false;
-
-const defaultOptions: WatchOptions = {
-  intervalMs: 700,
+const watchOptions: WatchOptions = {
+  intervalMs: 1500,
   recursive: true,
   maxEntries: 5000,
 };
@@ -34,34 +28,21 @@ function post(msg: MsgFromContent): void {
   chrome.runtime.sendMessage<MsgFromContent>(msg).catch(() => void 0);
 }
 
-async function tick(): Promise<void> {
+const loop = createWatchLoop({ options: watchOptions, post });
+
+async function withPausedLoop<T>(fn: () => Promise<T>): Promise<T> {
+  const wasRunning = loop.isWatching();
+  if (wasRunning) loop.pause();
   try {
-    const snap = await takeSnapshot(defaultOptions);
-    const events = diffSnapshots(latest, snap);
-    latest = snap;
-    if (events.length > 0) post({ kind: "watch-events", data: events });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    post({ kind: "error", data: { message } });
+    return await fn();
+  } finally {
+    if (wasRunning) {
+      // refresh snapshot so resume picks up the change exactly once
+      await loop.runOnce();
+      loop.resume();
+    }
   }
 }
-
-function start(): void {
-  if (watchTimer !== null) return;
-  watching = true;
-  post({ kind: "watch-status", data: { watching } });
-  void tick();
-  watchTimer = window.setInterval(() => void tick(), defaultOptions.intervalMs);
-}
-function stop(): void {
-  if (watchTimer !== null) {
-    clearInterval(watchTimer);
-    watchTimer = null;
-  }
-  watching = false;
-  post({ kind: "watch-status", data: { watching } });
-}
-
 
 chrome.runtime.onMessage.addListener(
   (msg: MsgToContent, _sender, sendResponse) => {
@@ -69,22 +50,23 @@ chrome.runtime.onMessage.addListener(
       try {
         switch (msg.kind) {
           case "start-watch":
-            start();
+            loop.start();
             sendResponse({ ok: true });
             break;
           case "stop-watch":
-            stop();
+            loop.stop();
             sendResponse({ ok: true });
             break;
-          case "tab-unloaded":
-            const snap = await takeSnapshot(defaultOptions);
-            latest = snap;
+          case "tab-unloaded": {
+            const snap = await takeSnapshot(watchOptions);
+            loop.setLatest(snap);
             post({ kind: "snapshot", data: snap });
             sendResponse({ ok: true });
             break;
+          }
           case "list": {
-            const snap = await takeSnapshot(defaultOptions);
-            latest = snap;
+            const snap = await takeSnapshot(watchOptions);
+            loop.setLatest(snap);
             post({ kind: "snapshot", data: snap });
             sendResponse({ ok: true });
             break;
@@ -95,37 +77,38 @@ chrome.runtime.onMessage.addListener(
                 path?: string;
                 recursive?: boolean;
               };
-              if (!path) throw new DOMException("Path is empty", "SyntaxError");
+              if (!path || typeof path !== "string") {
+                throw new DOMException("Path is empty", "SyntaxError");
+              }
 
-              await removePath(path, Boolean(recursive));
+              await withPausedLoop(async () => {
+                await removePath(path, Boolean(recursive));
+              });
 
-              const snap2 = await takeSnapshot(defaultOptions);
-              latest = snap2;
-              post({ kind: "snapshot", data: snap2 });
-              // post({ kind: "remove-result", data: { ok: true, path } });
-
+              const snap = loop.getLatest() ?? (await takeSnapshot(watchOptions));
+              loop.setLatest(snap);
+              post({ kind: "snapshot", data: snap });
               sendResponse({ ok: true, path });
             } catch (e) {
-              let message = "Unknown";
-              if (e instanceof DOMException)
-                message = `${e.name}: ${e.message}`;
-              else if (e instanceof Error)
-                message = `${e.name || "Error"}: ${e.message}`;
-              else message = String(e);
-
-              console.error("[cs] remove-path failed:", { error: message });
+              const message =
+                e instanceof DOMException
+                  ? `${e.name}: ${e.message}`
+                  : e instanceof Error
+                    ? `${e.name || "Error"}: ${e.message}`
+                    : String(e);
               sendResponse({ ok: false, error: message });
             }
-            
             break;
           }
 
           case "read-file": {
+            const { path } = (msg.data ?? {}) as { path?: string };
+            if (!path || typeof path !== "string") {
+              throw new DOMException("Path is empty", "SyntaxError");
+            }
             post({ kind: "file-read-start", data: null });
-            const { path } = msg.data as { path: string };
             const content = await readText(path);
             const bytes = await readBytes(path);
-
             post({ kind: "file-read", data: { path, content, bytes } });
             sendResponse({ ok: true });
             break;
@@ -136,29 +119,13 @@ chrome.runtime.onMessage.addListener(
               content: string;
               createIfMissing: boolean;
             };
-            const meta = await writeText(path, content, createIfMissing);
+            const meta = await withPausedLoop(() =>
+              writeText(path, content, createIfMissing)
+            );
             post({ kind: "write-result", data: { path, ok: true, ...meta } });
-            const snap = await takeSnapshot(defaultOptions);
-            const events = diffSnapshots(latest, snap);
-            latest = snap;
-            if (events.length) post({ kind: "watch-events", data: events });
             sendResponse({ ok: true });
             break;
           }
-          // case "write-bytes": {
-          //   const { path, data, createIfMissing } = msg.data as {
-          //     path: string;
-          //     data: ArrayBuffer;
-          //     createIfMissing: boolean;
-          //   };
-          //   const meta = await writeBytes(path, data, createIfMissing);
-          //   post({ kind: "write-result", data: { path, ok: true, ...meta } });
-          //   const snap = await takeSnapshot(defaultOptions); // <-- всегда шлём актуальный snap
-          //   latest = snap;
-          //   post({ kind: "snapshot", data: snap });
-          //   sendResponse({ ok: true });
-          //   break;
-          // }
           case "write-bytes": {
             const { path, dataB64, expectedSize, createIfMissing } =
               msg.data as {
@@ -173,15 +140,16 @@ chrome.runtime.onMessage.addListener(
               post({
                 kind: "error",
                 data: {
-                  message: `Размер после decode не совпал: ${path} (${bytes.byteLength} != ${expectedSize})`,
+                  message: `decoded size mismatch: ${path} (${bytes.byteLength} != ${expectedSize})`,
                 },
               });
             }
 
-            const meta = await writeBytes(path, bytes, createIfMissing);
+            const meta = await withPausedLoop(() =>
+              writeBytes(path, bytes, createIfMissing)
+            );
 
-            // Верификация: читаем обратно размер и сверяем
-            const fhMeta = await (async () => {
+            const verified = await (async () => {
               const root = await getRoot();
               const parts = path.split("/").filter(Boolean);
               const name = parts.pop() ?? "";
@@ -192,11 +160,11 @@ chrome.runtime.onMessage.addListener(
               return { size: f.size, lastModified: f.lastModified };
             })();
 
-            if (fhMeta.size !== bytes.byteLength) {
+            if (verified.size !== bytes.byteLength) {
               post({
                 kind: "error",
                 data: {
-                  message: `После записи размер 0/неверный: ${path} (${fhMeta.size} != ${bytes.byteLength})`,
+                  message: `post-write size mismatch: ${path} (${verified.size} != ${bytes.byteLength})`,
                 },
               });
             }
@@ -210,48 +178,29 @@ chrome.runtime.onMessage.addListener(
               path: string;
               content?: string;
             };
-            await createFile(path, content ?? "");
+            await withPausedLoop(() => createFile(path, content ?? ""));
             post({ kind: "create-result", data: { ok: true, path } });
-            const snap = await takeSnapshot(defaultOptions);
-            const events = diffSnapshots(latest, snap);
-            latest = snap;
-            if (events.length) post({ kind: "watch-events", data: events });
             sendResponse({ ok: true });
             break;
           }
           case "create-dir": {
             const { path } = msg.data as { path: string };
-            await createDir(path);
+            await withPausedLoop(() => createDir(path));
             post({ kind: "create-result", data: { ok: true, path } });
-            const snap = await takeSnapshot(defaultOptions);
-            const events = diffSnapshots(latest, snap);
-            latest = snap;
-            if (events.length) post({ kind: "watch-events", data: events });
             sendResponse({ ok: true });
             break;
           }
-          // case "read-bytes": {
-          //   const { path } = msg.data as { path: string };
-          //   const bytes = await readBytes(path);
-          //   post({ kind: "bytes-read", data: { path, bytes } });
-          //   sendResponse({ ok: true, bytes });
-          //   break;
-          // }
           case "rename-path": {
             const { from, to } = msg.data as { from: string; to: string };
-            await renamePath(from, to);
+            await withPausedLoop(() => renamePath(from, to));
             post({ kind: "rename-result", data: { ok: true, from, to } });
-            const snap = await takeSnapshot(defaultOptions);
-            const events = diffSnapshots(latest, snap);
-            latest = snap;
-            if (events.length) post({ kind: "watch-events", data: events });
             sendResponse({ ok: true });
             break;
           }
           default: {
             sendResponse({
               ok: false,
-              error: `Unknown kind: ${String((msg as any)?.kind)}`,
+              error: `Unknown kind: ${String((msg as { kind?: unknown })?.kind)}`,
             });
             break;
           }
@@ -267,19 +216,6 @@ chrome.runtime.onMessage.addListener(
 );
 
 post({ kind: "ready", data: null });
-post({ kind: "watch-status", data: { watching } });
-
-// post({ kind: "ready", data: { message: "ready" } });
-// start();
-// setTimeout(() => {
-//   post({ kind: "watch-status", data: { watching } });
-
-//   setTimeout(async () => {
-//     const snap = await takeSnapshot(defaultOptions);
-//     latest = snap;
-//     post({ kind: "snapshot", data: snap });
-//   }, 100);
-// }, 100);
-
+post({ kind: "watch-status", data: { watching: loop.isWatching() } });
 
 export {};
