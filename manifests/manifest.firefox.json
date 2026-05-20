@@ -23,9 +23,6 @@
     "activeTab",
     "storage"
   ],
-  "optional_host_permissions": [
-    "<all_urls>"
-  ],
   "devtools_page": "src/devtools/devtools.html",
   "background": {
     "service_worker": "src/background/service-entry.ts",
@@ -39,17 +36,6 @@
     "default_title": "OPFS Studio",
     "default_panel": "src/panel/index.html"
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "src/content/content-entry.ts"
-      ],
-      "run_at": "document_idle"
-    }
-  ],
   "web_accessible_resources": [
     {
       "resources": [
