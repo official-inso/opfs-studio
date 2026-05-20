@@ -79,7 +79,7 @@ release:tag-and-publish:
     - git config user.email "ci@opfs-studio.local"
     - git config user.name  "opfs-release"
     - git add package.json manifests/manifest.chrome.json manifests/manifest.edge.json manifests/manifest.firefox.json
-    - git commit -m "chore: release v$VERSION [skip ci]"
+    - 'git commit -m "chore: release v$VERSION [skip ci]"'
     - git tag "v$VERSION"
     - git push "https://oauth2:${GITLAB_RELEASE_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:master" --tags
     - MIRROR_BRANCH=master PUSH_TAGS=1 bash scripts/ci/mirror-to-github.sh
