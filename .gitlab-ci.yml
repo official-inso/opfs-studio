@@ -40,7 +40,7 @@ release:tag-and-publish:
   variables:
     GIT_DEPTH: 0
   before_script:
-    - apk add --no-cache git bash openssh-client
+    - apk add --no-cache git bash openssh-client zip
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     # 1. Compute next version (exit 3 = nothing to release → skip gracefully)
