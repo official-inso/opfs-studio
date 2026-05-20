@@ -42,6 +42,7 @@ EXCLUDES=(
   ":!builds"
   ":!example/node_modules"
   ":!example/dist"
+  ":!docs/demo"
   ":!package-lock.json"
   ":!pnpm-lock.yaml"
   ":!yarn.lock"

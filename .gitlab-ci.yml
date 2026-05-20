@@ -140,3 +140,25 @@ mirror:github:
     # On master also mirror the branch + all tags (so GitHub gets release tags).
     - if [ "$CI_COMMIT_BRANCH" = "master" ]; then export MIRROR_BRANCH=master PUSH_TAGS=1; fi
     - bash scripts/ci/mirror-to-github.sh
+
+# ─── publish demo ──────────────────────────────────────────────────────────────
+# On every push to `master` (release or not), build the example OPFS demo and
+# publish it to GitHub Pages under /demo/ (committed to `docs/demo` on `main`).
+# Independent of the release job.
+
+pages:demo:
+  stage: publish
+  image: node:20-alpine
+  tags: [docker]
+  needs:
+    - job: verify:typecheck-build
+      optional: false
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: on_success
+  variables:
+    GIT_DEPTH: 0
+  before_script:
+    - apk add --no-cache git bash openssh-client
+  script:
+    - bash scripts/ci/deploy-demo.sh
