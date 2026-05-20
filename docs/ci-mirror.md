@@ -4,19 +4,27 @@
 `github.com/official-inso/opfs-studio` (ветка `main`). Реализация — `.gitlab-ci.yml`
 (stage `publish`, джоба `mirror:github`) и `scripts/ci/mirror-to-github.sh`.
 
+Аутентификация — **SSH deploy key**, который **не истекает** (в отличие от PAT,
+который пришлось бы ротировать раз в 30–90 дней).
+
 ## Однократная настройка
 
-### 1. GitHub PAT
+### 1. SSH deploy key
 
-1. На GitHub: **Settings → Developer settings → Personal access tokens → Fine-grained tokens**.
-2. **Generate new token** с такими параметрами:
-   - Resource owner: `official-inso`.
-   - Repository access: **Only select repositories** → `official-inso/opfs-studio`.
-   - Repository permissions:
-     - `Contents`: **Read and write**.
-     - `Metadata`: **Read-only** (включится автоматически).
-   - Expiration: 90 дней (потом нужно будет ротировать).
-3. Скопируй токен (показывается один раз).
+Сгенерировать ключ без passphrase:
+
+```bash
+ssh-keygen -t ed25519 -C "opfs-studio-gitlab-mirror" -f ./mirror_key -N ""
+```
+
+- **Публичный** ключ (`mirror_key.pub`) → GitHub: репозиторий
+  `official-inso/opfs-studio` → **Settings → Deploy keys → Add deploy key**,
+  обязательно поставить галочку **Allow write access**.
+- **Приватный** ключ (`mirror_key`) → в GitLab (см. шаг 2).
+- Локальные файлы ключа после этого удалить.
+
+Deploy key привязан к одному репозиторию, имеет минимальные права (push в этот
+репо) и **бессрочен** — ротация не требуется.
 
 ### 2. GitLab CI variable
 
@@ -24,16 +32,18 @@
 
 | Поле | Значение |
 | --- | --- |
-| Key | `MIRROR_GH_TOKEN` |
-| Value | `<paste PAT>` |
-| Type | Variable |
+| Key | `MIRROR_SSH_KEY` |
+| Value | содержимое приватного ключа `mirror_key` (целиком, с BEGIN/END) |
+| **Type** | **File** |
 | Environment | All |
+| **Visibility** | **Visible** (multiline-ключ нельзя маскировать) |
 | **Protect variable** | **ON** |
-| **Mask variable** | **ON** |
 | Expand variable reference | **OFF** |
 
-«Protect» = переменная доступна только на protected-ветках. Убедись, что `main`
-помечена protected: **Settings → Repository → Protected branches**.
+Тип **File** означает, что в пайплайне `$MIRROR_SSH_KEY` — это путь к файлу с
+ключом (значение не печатается в логи). «Protect» = доступно только на
+protected-ветках; убедись, что `main` помечена protected:
+**Settings → Repository → Protected branches**.
 
 ### 3. Runner
 
@@ -97,7 +107,7 @@ verify:typecheck-build  →  mirror:github
 ## Ручной запуск
 
 GitLab → **CI/CD → Pipelines → Run pipeline** → выбрать ветку `main` → Run.
-Полезно после ротации PAT, чтобы убедиться, что новый токен валидный.
+Полезно для разового перезапуска зеркала вручную.
 
 ## Локальная проверка hygiene-check
 

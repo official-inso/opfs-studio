@@ -22,8 +22,8 @@ verify:typecheck-build:
 
 # ─── publish ─────────────────────────────────────────────────────────────────
 # Mirror main → github.com/official-inso/opfs-studio after a successful verify.
-# Runs in an alpine container on the docker-executor runner — no nested
-# `docker run`, just git over HTTPS with the MIRROR_GH_TOKEN CI variable.
+# Runs in an alpine container on the docker-executor runner. Auth is an SSH
+# deploy key (MIRROR_SSH_KEY, File-type CI variable) — it does not expire.
 
 mirror:github:
   stage: publish
@@ -38,6 +38,6 @@ mirror:github:
   variables:
     GIT_DEPTH: 0
   before_script:
-    - apk add --no-cache git bash
+    - apk add --no-cache git bash openssh-client
   script:
     - bash scripts/ci/mirror-to-github.sh
