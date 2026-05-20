@@ -40,7 +40,7 @@ release:tag-and-publish:
   variables:
     GIT_DEPTH: 0
   before_script:
-    - apk add --no-cache git bash openssh-client zip
+    - apk add --no-cache git bash openssh-client zip curl
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     # 1. Compute next version (exit 3 = nothing to release → skip gracefully)
@@ -86,6 +86,30 @@ release:tag-and-publish:
     - git tag "v$VERSION"
     - git push "https://oauth2:${GITLAB_RELEASE_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:master" --tags
     - MIRROR_BRANCH=master PUSH_TAGS=1 bash scripts/ci/mirror-to-github.sh
+    # 5. Create the GitHub Release directly via the API. Mirror pushes the tag
+    #    over a deploy key, which does NOT trigger GitHub Actions — so we create
+    #    the release here using a non-expiring PAT (GITHUB_RELEASE_TOKEN).
+    - |
+      if [ -n "${GITHUB_RELEASE_TOKEN:-}" ]; then
+        REL=$(curl -sS -X POST \
+          -H "Authorization: Bearer $GITHUB_RELEASE_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${MIRROR_GH_REPO:-official-inso/opfs-studio}/releases" \
+          -d "{\"tag_name\":\"v$VERSION\",\"name\":\"v$VERSION\",\"body\":\"Automated release v$VERSION\"}")
+        RID=$(printf '%s' "$REL" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).id||'')}catch{console.log('')}})")
+        if [ -n "$RID" ]; then
+          curl -sS -X POST \
+            -H "Authorization: Bearer $GITHUB_RELEASE_TOKEN" \
+            -H "Content-Type: application/zip" \
+            --data-binary @builds/opfs-studio-chrome.zip \
+            "https://uploads.github.com/repos/${MIRROR_GH_REPO:-official-inso/opfs-studio}/releases/$RID/assets?name=opfs-studio-chrome.zip"
+          echo "GitHub Release v$VERSION created."
+        else
+          echo "GitHub Release API did not return an id: $REL"
+        fi
+      else
+        echo "GITHUB_RELEASE_TOKEN not set — skipping GitHub Release creation."
+      fi
   artifacts:
     paths:
       - builds/opfs-studio-chrome.zip
