@@ -8,6 +8,11 @@ export default defineConfig({
     port: 5174,
     strictPort: true,
   },
+  // Don't inherit the repo-root postcss.config.js (Tailwind) — the demo has no
+  // Tailwind deps, and in CI the root node_modules isn't installed.
+  css: {
+    postcss: { plugins: [] },
+  },
   build: {
     target: "es2022",
   },
