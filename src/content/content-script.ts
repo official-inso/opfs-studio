@@ -25,6 +25,11 @@ const watchOptions: WatchOptions = {
 };
 
 function post(msg: MsgFromContent): void {
+  // Tag every snapshot with the page origin so the panel can show which tab
+  // the editor is bound to (no "tabs" permission needed).
+  if (msg.kind === "snapshot" && msg.data && typeof msg.data === "object") {
+    (msg.data as { origin?: string }).origin = location.origin;
+  }
   chrome.runtime.sendMessage<MsgFromContent>(msg).catch(() => void 0);
 }
 

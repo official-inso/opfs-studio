@@ -1,15 +1,16 @@
 import React from "react";
-import { ELSProvider, ELSErrorBoundary } from "@inso_web/els-react";
-import { elsConfig, elsError } from "./client";
+import { elsError } from "./client";
 
 /**
  * Top-level wrapper for every React surface (panel, popup, devtools).
  *
- * - When ELS is configured (build with endpoint+key): wraps children in
- *   <ELSProvider> (captureGlobalErrors → window.onerror + unhandledrejection)
- *   and <ELSErrorBoundary> so render-phase crashes are reported with stacktrace.
- * - When ELS is disabled: still wraps children in a local error boundary so a
- *   crash shows a fallback instead of a blank screen.
+ * - Catches render-phase crashes and reports them to ELS (source:"client",
+ *   with stacktrace + componentStack) instead of showing a blank screen.
+ * - Installs global window.onerror / unhandledrejection handlers that report
+ *   to ELS as well.
+ *
+ * All reporting goes through `elsError`, which is a no-op when ELS is disabled
+ * (build without the API key), so the extension works fine without it.
  *
  * The fallback lives ABOVE the i18n provider, so it uses neutral bilingual text.
  */
@@ -50,8 +51,7 @@ function Fallback(): React.ReactElement {
   );
 }
 
-/** Minimal error boundary used when ELS is not configured. */
-class LocalErrorBoundary extends React.Component<
+class ErrorBoundary extends React.Component<
   { children?: React.ReactNode },
   { error: Error | null }
 > {
@@ -61,9 +61,8 @@ class LocalErrorBoundary extends React.Component<
     return { error };
   }
 
-  componentDidCatch(error: Error): void {
-    // No-op when ELS disabled; kept for symmetry / future local logging.
-    elsError(error, "render");
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    elsError(error, "render", info?.componentStack ?? undefined);
   }
 
   render(): React.ReactNode {
@@ -71,17 +70,37 @@ class LocalErrorBoundary extends React.Component<
   }
 }
 
+function useGlobalErrorReporting(): void {
+  React.useEffect(() => {
+    const onError = (e: ErrorEvent) => {
+      elsError(e.error ?? e.message, "window.onerror");
+    };
+    const onRejection = (e: PromiseRejectionEvent) => {
+      elsError(e.reason, "unhandledrejection");
+    };
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => {
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onRejection);
+    };
+  }, []);
+}
+
+function GlobalErrorReporter(): null {
+  useGlobalErrorReporting();
+  return null;
+}
+
 export function ElsBoundary({
   children,
 }: {
   children: React.ReactNode;
 }): React.ReactElement {
-  if (!elsConfig) {
-    return <LocalErrorBoundary>{children}</LocalErrorBoundary>;
-  }
   return (
-    <ELSProvider config={elsConfig} captureGlobalErrors>
-      <ELSErrorBoundary fallback={<Fallback />}>{children}</ELSErrorBoundary>
-    </ELSProvider>
+    <ErrorBoundary>
+      <GlobalErrorReporter />
+      {children}
+    </ErrorBoundary>
   );
 }

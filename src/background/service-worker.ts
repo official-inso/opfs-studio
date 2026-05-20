@@ -62,6 +62,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   }
 });
 
+// Tell open side panels which tab is now active, so they can warn the user when
+// they've switched away from the tab the OPFS editor is bound to.
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  for (const p of panelPorts) {
+    if (p.isDevtools) continue;
+    try {
+      p.postMessage({ type: "tab:activated", tabId });
+    } catch {
+      // ignore
+    }
+  }
+});
+
 function broadcast(msg: MsgFromContent): void {
   for (const p of panelPorts) {
     try {

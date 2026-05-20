@@ -58,9 +58,12 @@ function buildUrl(path: string): string {
 }
 
 function sendPixel(url: string): void {
+  // Use fetch(no-cors) instead of `new Image()`: image requests are governed by
+  // the extension CSP `img-src` (which does not allow mc.yandex.ru), and Image
+  // is unavailable in the service worker. fetch goes through `connect-src https:`
+  // (allowed) and works on extension pages and in the service worker alike.
   try {
-    const img = new Image();
-    img.src = url;
+    void fetch(url, { method: "GET", mode: "no-cors", credentials: "omit" });
   } catch (e) {
     console.warn("Yandex Metrika send failed", e);
   }

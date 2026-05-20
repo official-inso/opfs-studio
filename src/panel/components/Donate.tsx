@@ -91,7 +91,7 @@ export const DonateButton: React.FC = () => {
         />
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-[min(92vw,32rem)]">
           <DialogHeader>
             <DialogTitle>
               {t("donate.title", "Support the project")}

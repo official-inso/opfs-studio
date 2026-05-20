@@ -5,6 +5,7 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
+import { trackEvent } from "@/analytics";
 
 const toLF = (s: string): string => s.replace(/\r\n?/g, "\n");
 
@@ -25,6 +26,7 @@ export const ConflictBanner: React.FC = () => {
 
   async function handleReplace(): Promise<void> {
     if (!currentPath || !conflict) return;
+    trackEvent("conflict_resolved", { kind: "disk" });
     setBufferForPath(
       currentPath ?? "",
       toLF(conflict ? conflict.diskContent : ""),
@@ -36,6 +38,7 @@ export const ConflictBanner: React.FC = () => {
 
   async function handleMergeApply(merged: string): Promise<void> {
     if (!currentPath) return;
+    trackEvent("conflict_resolved", { kind: "merge" });
     await send({
       kind: "write-file",
       data: { path: currentPath ?? "", content: merged, createIfMissing: true },
@@ -74,6 +77,7 @@ export const ConflictBanner: React.FC = () => {
           size="sm"
           className="h-6 px-2 text-[11px] gap-2 flex items-center"
           onClick={() => {
+            trackEvent("conflict_resolved", { kind: "mine" });
             setConflict(null);
           }}
         >

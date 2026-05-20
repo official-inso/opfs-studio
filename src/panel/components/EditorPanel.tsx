@@ -5,6 +5,7 @@ import { ConflictBanner } from "./Conflict";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { base64ToUint8, base64ToUint8Local } from "@/shared/base64";
+import { trackEvent } from "@/analytics";
 import Spin from "./Spin";
 import { FileDown, ImageDown } from "lucide-react";
 import { TableView } from "./TableView";
@@ -86,6 +87,12 @@ export const EditorPanel: React.FC = () => {
   const [forceText, setForceText] = useState<boolean>(false);
   const [forceValue, setForceValue] = useState<string>("");
   const [viewMode, setViewMode] = useState<"alt" | "code" | "split">("alt");
+
+  // User-initiated view switch (tracked); the auto-set on file change is not.
+  const changeViewMode = useCallback((m: "alt" | "code" | "split") => {
+    trackEvent("view_mode_changed", { kind: m });
+    setViewMode(m);
+  }, []);
 
   useEffect(() => {
     setForceText(false);
@@ -172,6 +179,7 @@ export const EditorPanel: React.FC = () => {
 
   const handleDownloadFile = useCallback(async () => {
     if (!path) return;
+    trackEvent("file_downloaded", { ext: ext(path) });
 
     // имя файла из пути
     const filename = path.split("/").filter(Boolean).pop() ?? "file";
@@ -298,7 +306,7 @@ export const EditorPanel: React.FC = () => {
                   size="sm"
                   variant={viewMode === "alt" ? "default" : "secondary"}
                   className="h-6 px-2 text-[11px]"
-                  onClick={() => setViewMode("alt")}
+                  onClick={() => changeViewMode("alt")}
                 >
                   {altLabel}
                 </Button>
@@ -306,7 +314,7 @@ export const EditorPanel: React.FC = () => {
                   size="sm"
                   variant={viewMode === "code" ? "default" : "secondary"}
                   className="h-6 px-2 text-[11px]"
-                  onClick={() => setViewMode("code")}
+                  onClick={() => changeViewMode("code")}
                 >
                   {t("view.code", "Code")}
                 </Button>
@@ -318,7 +326,7 @@ export const EditorPanel: React.FC = () => {
                   size="sm"
                   variant={viewMode === "split" ? "default" : "secondary"}
                   className="h-6 px-2 text-[11px]"
-                  onClick={() => setViewMode("split")}
+                  onClick={() => changeViewMode("split")}
                 >
                   {t("view.split", "Split")}
                 </Button>
@@ -326,7 +334,7 @@ export const EditorPanel: React.FC = () => {
                   size="sm"
                   variant={viewMode === "code" ? "default" : "secondary"}
                   className="h-6 px-2 text-[11px]"
-                  onClick={() => setViewMode("code")}
+                  onClick={() => changeViewMode("code")}
                 >
                   {t("view.code", "Code")}
                 </Button>

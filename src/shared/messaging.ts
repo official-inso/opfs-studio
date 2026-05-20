@@ -12,6 +12,8 @@ export interface OpfsFileMeta {
 export interface OpfsSnapshot {
   files: OpfsFileMeta[];
   timestamp: number;
+  /** Origin of the page this snapshot was taken from (set by the content script). */
+  origin?: string;
 }
 export type WatchEventType = "added" | "removed" | "modified";
 export interface WatchEvent {

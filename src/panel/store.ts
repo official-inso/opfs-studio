@@ -18,6 +18,7 @@ import {
 import { injectContentScript } from "./lib/inject-content-script";
 import { loadUIState, saveUIState } from "./lib/session-state";
 import { ti } from "@/i18n-instance";
+import { trackEvent } from "@/analytics";
 
 export type FileId = string;
 
@@ -71,6 +72,10 @@ export interface UIState {
 
   statusLine: StatusValue;
   tabId: number | null;
+  /** Origin of the page the editor is bound to (from the content-script snapshot). */
+  boundOrigin: string | null;
+  /** The browser tab the user is currently looking at (from tabs.onActivated). */
+  activeTabId: number | null;
   watching: boolean;
   conflict: Conflict | null;
   awaitingConflictFor: string | null;
@@ -82,6 +87,8 @@ export interface UIState {
   applyDiskContent: (path: string, text: string) => void;
 
   setTab: (id: number | null) => void;
+  setActiveTabId: (id: number | null) => void;
+  switchToBoundTab: () => void;
   setWatching: (w: boolean) => void;
   toggleFormatOnOpen: () => void;
 
@@ -257,6 +264,8 @@ export const useUI = create<UIState>((set, get) => ({
 
   statusLine: "Success",
   tabId: null,
+  boundOrigin: null,
+  activeTabId: null,
   watching: true,
   conflict: null,
   awaitingConflictFor: null,
@@ -265,6 +274,22 @@ export const useUI = create<UIState>((set, get) => ({
   _persistedExpanded: new Set<string>(),
 
   setTab: (id) => set({ tabId: id }),
+  setActiveTabId: (id) => set({ activeTabId: id }),
+  switchToBoundTab: () => {
+    const id = get().tabId;
+    if (id == null) return;
+    try {
+      chrome.tabs.get(id, (tab) => {
+        if (chrome.runtime.lastError || !tab) return;
+        chrome.tabs.update(id, { active: true });
+        if (tab.windowId != null) {
+          chrome.windows.update(tab.windowId, { focused: true });
+        }
+      });
+    } catch {
+      // ignore
+    }
+  },
   setWatching: (w) => set({ watching: w }),
   toggleFormatOnOpen: () => set((s) => ({ formatOnOpen: !s.formatOnOpen })),
 
@@ -329,6 +354,7 @@ export const useUI = create<UIState>((set, get) => ({
     set({
       files: snap.files,
       tree,
+      ...(snap.origin ? { boundOrigin: snap.origin } : {}),
       statusLine: {
         key: "status.files",
         params: { count: snap.files.filter((f) => !f.isDirectory).length },
@@ -383,6 +409,7 @@ export const useUI = create<UIState>((set, get) => ({
   },
 
   openFile: (path) => {
+    trackEvent("file_opened", { ext: extOf(path) });
     const known = get().buffers[path];
     // Reset buffer/content so previewers don't render stale data from the
     // previously selected file while read-file is in flight. loading=true

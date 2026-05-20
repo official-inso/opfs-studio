@@ -3,6 +3,20 @@ import { createRoot } from "react-dom/client";
 import App from "../panel/App";
 import { ElsBoundary } from "../els/ElsBoundary";
 import "../panel/styles.css";
+import { applySystemTheme, applyTheme, watchThemeSync } from "../panel/theme";
+
+(() => {
+  let stored: string | null = null;
+  try {
+    stored = window.localStorage.getItem("theme");
+  } catch {
+    stored = null;
+  }
+  if (stored === "light" || stored === "dark") applyTheme(stored);
+  else applySystemTheme();
+})();
+
+watchThemeSync();
 import { useUI } from "../panel/store";
 
 const devtools = (

@@ -122,5 +122,32 @@ export async function setupI18n(): Promise<typeof i18n> {
   };
   i18n.changeLanguage = wrapped;
 
+  // Keep every surface (popup, side panel, devtools) in sync: when the language
+  // is changed anywhere it is persisted to chrome.storage.sync, so each open
+  // document applies the new language live without needing a reload.
+  const norm = (raw?: string | null): string => {
+    if (!raw) return "en";
+    if (raw.startsWith("ru")) return "ru";
+    if (raw.startsWith("fr")) return "fr";
+    if (raw.startsWith("de")) return "de";
+    if (raw.startsWith("es")) return "es";
+    if (raw.startsWith("zh")) return "zh-CN";
+    if (raw.startsWith("ja")) return "ja";
+    return "en";
+  };
+  try {
+    chrome.storage?.onChanged?.addListener((changes, area) => {
+      if (area !== "sync") return;
+      const change = changes[LANG_KEY];
+      if (!change) return;
+      const next = norm(change.newValue as string | undefined);
+      if (next === i18n.language) return;
+      // Apply directly (origChange) — do not re-persist, to avoid a write loop.
+      void ensureLng(next).then(() => origChange(next));
+    });
+  } catch {
+    // storage events unavailable — surfaces still sync on next open
+  }
+
   return i18n;
 }

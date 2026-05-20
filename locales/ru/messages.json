@@ -91,7 +91,9 @@
   "status": {
     "files": "Файлов: {{count}}",
     "opening": "Открываю: {{path}}",
-    "saved": "Сохранено: {{path}}"
+    "saved": "Сохранено: {{path}}",
+    "boundTo": "Привязано к {{host}}",
+    "tabMismatch": "Редактор привязан к {{host}} — нажмите, чтобы вернуться"
   },
   "upload": {
     "files": "Загрузка файлов… {{done}}/{{total}}",
@@ -121,5 +123,14 @@
     "dateFormat": "Формат даты",
     "locale": "Локальный",
     "emptyFilter": "Нет строк, соответствующих фильтру"
+  },
+  "popup": {
+    "openSidePanel": "Открыть панель",
+    "description": "Просмотр и редактирование Origin Private File System текущей вкладки.",
+    "opfsChecking": "Проверяем OPFS…",
+    "opfsUnavailable": "OPFS не найден / недоступен на этой странице",
+    "opfsEmpty": "OPFS пуст",
+    "opfsFiles": "Файлов: {{count}}",
+    "opfsFolders": "Папок: {{count}}"
   }
 }

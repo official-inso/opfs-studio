@@ -70,6 +70,12 @@ function AppContent() {
   const [welcomeOpen, setWelcomeOpen] = useState<boolean>(false);
 
   const onPanelMessage = async (raw: unknown): Promise<void> => {
+    const port = raw as { type?: string; tabId?: number };
+    if (port.type === "tab:activated") {
+      useUI.getState().setActiveTabId(port.tabId ?? null);
+      return;
+    }
+
     const msg = raw as MsgFromContent;
 
     if (msg.kind === "watch-status") {
@@ -195,7 +201,11 @@ function AppContent() {
     }
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs[0];
-      if (tab?.id != null) setTab(tab.id);
+      if (tab?.id != null) {
+        setTab(tab.id);
+        // Start in sync — the bound tab is the active one on open.
+        useUI.getState().setActiveTabId(tab.id);
+      }
     });
   }, [setTab]);
 

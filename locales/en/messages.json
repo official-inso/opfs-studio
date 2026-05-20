@@ -91,7 +91,9 @@
   "status": {
     "files": "Files: {{count}}",
     "opening": "Opening: {{path}}",
-    "saved": "Saved: {{path}}"
+    "saved": "Saved: {{path}}",
+    "boundTo": "Bound to {{host}}",
+    "tabMismatch": "This editor is bound to {{host}} — click to switch back"
   },
   "upload": {
     "files": "Uploading files… {{done}}/{{total}}",
@@ -121,5 +123,14 @@
     "dateFormat": "Date format",
     "locale": "Locale",
     "emptyFilter": "No rows match the current filter"
+  },
+  "popup": {
+    "openSidePanel": "Open side panel",
+    "description": "Inspect and edit the Origin Private File System of the current tab.",
+    "opfsChecking": "Checking OPFS…",
+    "opfsUnavailable": "OPFS not found / not available on this page",
+    "opfsEmpty": "OPFS is empty",
+    "opfsFiles": "{{count}} files",
+    "opfsFolders": "{{count}} folders"
   }
 }
