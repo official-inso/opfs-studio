@@ -7,6 +7,10 @@
 Аутентификация — **SSH deploy key**, который **не истекает** (в отличие от PAT,
 который пришлось бы ротировать раз в 30–90 дней).
 
+> Ветка `master` (релизная) и теги тоже зеркалятся на GitHub — это делает
+> release-джоба (см. `docs/release-process.md`), используя тот же deploy key
+> с `MIRROR_BRANCH=master PUSH_TAGS=1`.
+
 ## Однократная настройка
 
 ### 1. SSH deploy key
