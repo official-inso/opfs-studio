@@ -106,9 +106,13 @@ mirror:github:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: on_success
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: on_success
   variables:
     GIT_DEPTH: 0
   before_script:
     - apk add --no-cache git bash openssh-client
   script:
+    # On master also mirror the branch + all tags (so GitHub gets release tags).
+    - if [ "$CI_COMMIT_BRANCH" = "master" ]; then export MIRROR_BRANCH=master PUSH_TAGS=1; fi
     - bash scripts/ci/mirror-to-github.sh
