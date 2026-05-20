@@ -68,8 +68,8 @@ release:tag-and-publish:
         export CLIENT_ID="$CWS_CLIENT_ID"
         export CLIENT_SECRET="$CWS_CLIENT_SECRET"
         export REFRESH_TOKEN="$CWS_REFRESH_TOKEN"
-        npx chrome-webstore-upload upload --source builds/opfs-studio-chrome.zip
-        npx chrome-webstore-upload publish
+        npx chrome-webstore-upload upload --source builds/opfs-studio-chrome.zip --extension-id "$CWS_EXTENSION_ID"
+        npx chrome-webstore-upload publish --extension-id "$CWS_EXTENSION_ID"
       else
         echo "CWS_* variables not set — skipping Chrome Web Store publish (build artifact still produced)."
       fi
