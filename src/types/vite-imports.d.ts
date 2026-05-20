@@ -18,3 +18,13 @@ declare module "monaco-editor/esm/vs/language/typescript/ts.worker?worker&url" {
   const url: string;
   export default url;
 }
+
+declare module "*.html?url" {
+  const url: string;
+  export default url;
+}
+
+declare module "*.png?url" {
+  const url: string;
+  export default url;
+}

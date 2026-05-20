@@ -24,3 +24,16 @@
 
 - Некоторые браузеры (или режимы) могут блокировать `navigator.storage.getDirectory()`.
 - Проверьте, что включён **Chrome 109+** или **Chromium-based** браузер.
+
+### 🧩 Popup открывается с ERR_FAILED
+
+Action popup (`chrome-extension://.../src/popup/index.html`) может падать с `ERR_FAILED`, если расширение собрано через `npm run dev`, но dev-сервер на `localhost:64124` не запущен. В dev-режиме `@crxjs/vite-plugin` подменяет popup на HMR-loader, который обращается к dev-серверу за модулями.
+
+Два рабочих режима:
+
+| Команда | Когда использовать | Поведение |
+|---|---|---|
+| `npm run dev` | Активная разработка side panel / DevTools panel | HMR работает. Popup открывается только пока dev-сервер запущен. |
+| `npm run watch` | Активная разработка popup; беглые проверки расширения | Авто-пересборка без HMR. Popup открывается всегда. После каждой правки — reload расширения в `chrome://extensions`. |
+
+Финальная сборка: `npm run build:chrome` (или `:edge` / `:firefox`).

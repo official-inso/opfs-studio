@@ -5,6 +5,9 @@
   "version": "1.0.0",
   "description": "Following OPFS on the page and edits files via Monaco.",
   "icons": {
+    "16": "public/icon128.png",
+    "32": "public/icon128.png",
+    "48": "public/icon128.png",
     "128": "public/icon128.png"
   },
   "content_security_policy": {
@@ -16,16 +19,17 @@
     "sidePanel",
     "storage"
   ],
-  "devtools_page": "src/devtools/devtools.html",
-  "host_permissions": [
+  "optional_host_permissions": [
     "<all_urls>"
   ],
+  "devtools_page": "src/devtools/devtools.html",
   "background": {
-    "service_worker": "background/service-worker.js",
+    "service_worker": "src/background/service-entry.ts",
     "type": "module"
   },
   "action": {
-    "default_title": "Open OPFS Panel"
+    "default_title": "Open OPFS Panel",
+    "default_popup": "src/popup/index.html"
   },
   "side_panel": {
     "default_path": "src/panel/index.html"
@@ -36,7 +40,7 @@
         "<all_urls>"
       ],
       "js": [
-        "assets/content-script.js"
+        "src/content/content-entry.ts"
       ],
       "run_at": "document_idle"
     }
@@ -44,14 +48,13 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "assets/*",
-        "locales/en/common.json",
-        "locales/ru/common.json",
-        "locales/fr/common.json",
-        "locales/de/common.json",
-        "locales/es/common.json",
-        "locales/zh/common.json",
-        "locales/ja/common.json"
+        "locales/en/messages.json",
+        "locales/ru/messages.json",
+        "locales/fr/messages.json",
+        "locales/de/messages.json",
+        "locales/es/messages.json",
+        "locales/zh-CN/messages.json",
+        "locales/ja/messages.json"
       ],
       "matches": [
         "<all_urls>"

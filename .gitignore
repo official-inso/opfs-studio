@@ -49,3 +49,5 @@ builds
 # === IDE ===
 .vscode/
 .idea/
+# Playwright MCP snapshots (may contain secrets)
+.playwright-mcp/
