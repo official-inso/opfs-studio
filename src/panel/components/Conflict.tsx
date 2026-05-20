@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AlertTriangle, GitBranch, GitMerge, ReplaceAll } from "lucide-react";
+import { AlertTriangle, Check, GitBranch, GitMerge, ReplaceAll } from "lucide-react";
 import { useUI } from "../store";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { Button } from "@/components/ui/button";
@@ -117,7 +117,6 @@ const DiffEditor: React.FC<{
     const original = monaco.editor.createModel(left, "plaintext");
     const modified = monaco.editor.createModel(right, "plaintext");
     const editor = monaco.editor.createDiffEditor(host.current, {
-      theme: "vs-dark",
       readOnly: false,
       renderSideBySide: true,
       enableSplitViewResizing: true,
@@ -149,14 +148,17 @@ const DiffEditor: React.FC<{
       <div className="flex-1" ref={host} />
       <div className="mt-2 flex justify-end gap-2">
         <Button
+          size="sm"
           variant="secondary"
+          className="h-7 px-3 gap-2 flex items-center"
           onClick={() => {
             const merged =
               diffRef.current?.getModel()?.modified.getValue() ?? right;
             onApply(merged);
           }}
         >
-          {t("conflict.Applyunited")}
+          <Check className="h-3.5 w-3.5" />
+          <span>{t("conflict.Applyunited")}</span>
         </Button>
       </div>
     </div>

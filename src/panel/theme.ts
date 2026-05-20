@@ -1,25 +1,27 @@
-export function applySystemTheme(): void {
-  const mq = window.matchMedia("(prefers-color-scheme: dark)");
-  const set = (dark: boolean) => {
-    document.documentElement.classList.toggle("dark", dark);
-  };
-  set(mq.matches);
-  mq.addEventListener("change", (e) => set(e.matches));
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+
+export type Theme = "light" | "dark";
+
+export function getTheme(): Theme {
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
-export const getTheme = (): "light" | "dark" => {
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
-  try {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    return mq.matches ? "dark" : "light";
-  } catch (error) {
-    return document.documentElement.classList.contains("dark")
-      ? "dark"
-      : "light";
-  }
-};
-
-export const setTheme = (theme: "light" | "dark"): void => {
+export function setTheme(theme: Theme): void {
   document.documentElement.classList.toggle("dark", theme === "dark");
-  localStorage.setItem("theme", theme);
-};
+  try {
+    localStorage.setItem("theme", theme);
+  } catch {
+    // localStorage may be blocked
+  }
+  try {
+    monaco.editor.setTheme(theme === "dark" ? "vs-dark" : "vs");
+  } catch {
+    // monaco not yet loaded — safe to ignore
+  }
+}
+
+export function applySystemTheme(): void {
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  setTheme(mq.matches ? "dark" : "light");
+  mq.addEventListener("change", (e) => setTheme(e.matches ? "dark" : "light"));
+}

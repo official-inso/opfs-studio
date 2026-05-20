@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { Sparkles, FolderTree, Eye, Pencil } from "lucide-react";
+import { FolderTree, Eye, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -34,7 +34,12 @@ export const WelcomeDialog: React.FC<WelcomeDialogProps> = ({
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-yellow-500" />
+            <img
+              src="/logo.svg"
+              alt=""
+              className="h-6 w-6 select-none"
+              draggable={false}
+            />
             {t("welcome.title")}
           </DialogTitle>
           <DialogDescription>{t("welcome.subtitle")}</DialogDescription>

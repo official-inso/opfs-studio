@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CodeEditor } from "./Editor";
 import { useUI, isTextual } from "../store";
 import { ConflictBanner } from "./Conflict";
@@ -7,6 +7,14 @@ import { useTranslation } from "react-i18next";
 import { base64ToUint8, base64ToUint8Local } from "@/shared/base64";
 import Spin from "./Spin";
 import { FileDown, ImageDown } from "lucide-react";
+import { TableView } from "./TableView";
+import { MarkdownView } from "./MarkdownView";
+import { SvgPreview } from "./SvgPreview";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 function ext(path: string | null): string {
   return (path?.split(".").pop() ?? "").toLowerCase();
@@ -77,10 +85,13 @@ export const EditorPanel: React.FC = () => {
 
   const [forceText, setForceText] = useState<boolean>(false);
   const [forceValue, setForceValue] = useState<string>("");
+  const [viewMode, setViewMode] = useState<"alt" | "code" | "split">("alt");
 
   useEffect(() => {
     setForceText(false);
     setForceValue("");
+    const e = (path?.split(".").pop() ?? "").toLowerCase();
+    setViewMode(e === "svg" ? "split" : "alt");
     if (revokeRef.current) {
       URL.revokeObjectURL(revokeRef.current);
       revokeRef.current = null;
@@ -263,6 +274,14 @@ export const EditorPanel: React.FC = () => {
       setBuf(next);
     };
 
+    const isTable = !forceText && (e === "csv" || e === "tsv");
+    const isMarkdown = !forceText && (e === "md" || e === "markdown");
+    const isSvgFile = !forceText && e === "svg";
+    const altView = isTable || isMarkdown;
+    const altLabel = isTable
+      ? t("view.table", "Table")
+      : t("view.preview", "Preview");
+
     return (
       <div className="flex flex-col min-h-0 h-full">
         <div className="h-8 px-2 border-b text-xs flex items-center gap-2">
@@ -273,6 +292,46 @@ export const EditorPanel: React.FC = () => {
             </span>
           )}
           <div className="ml-auto flex items-center gap-2">
+            {altView && (
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant={viewMode === "alt" ? "default" : "secondary"}
+                  className="h-6 px-2 text-[11px]"
+                  onClick={() => setViewMode("alt")}
+                >
+                  {altLabel}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={viewMode === "code" ? "default" : "secondary"}
+                  className="h-6 px-2 text-[11px]"
+                  onClick={() => setViewMode("code")}
+                >
+                  {t("view.code", "Code")}
+                </Button>
+              </div>
+            )}
+            {isSvgFile && (
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant={viewMode === "split" ? "default" : "secondary"}
+                  className="h-6 px-2 text-[11px]"
+                  onClick={() => setViewMode("split")}
+                >
+                  {t("view.split", "Split")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={viewMode === "code" ? "default" : "secondary"}
+                  className="h-6 px-2 text-[11px]"
+                  onClick={() => setViewMode("code")}
+                >
+                  {t("view.code", "Code")}
+                </Button>
+              </div>
+            )}
             <Button
               size="sm"
               variant="secondary"
@@ -304,12 +363,35 @@ export const EditorPanel: React.FC = () => {
         </div>
         <ConflictBanner />
         <div className="flex-1 min-h-0">
-          <CodeEditor
-            path={path}
-            value={valueForEditor}
-            onChange={onChangeEditor}
-            formatOnOpen={formatOnOpen}
-          />
+          {altView && viewMode === "alt" ? (
+            isTable ? (
+              <TableView text={valueForEditor} delimiter={e === "tsv" ? "\t" : ","} />
+            ) : (
+              <MarkdownView text={valueForEditor} />
+            )
+          ) : isSvgFile && viewMode === "split" ? (
+            <ResizablePanelGroup direction="horizontal">
+              <ResizablePanel defaultSize={50} minSize={20}>
+                <CodeEditor
+                  path={path}
+                  value={valueForEditor}
+                  onChange={onChangeEditor}
+                  formatOnOpen={formatOnOpen}
+                />
+              </ResizablePanel>
+              <ResizableHandle />
+              <ResizablePanel defaultSize={50} minSize={20}>
+                <SvgPreview text={valueForEditor} />
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          ) : (
+            <CodeEditor
+              path={path}
+              value={valueForEditor}
+              onChange={onChangeEditor}
+              formatOnOpen={formatOnOpen}
+            />
+          )}
         </div>
       </div>
     );
@@ -453,28 +535,39 @@ export const EditorPanel: React.FC = () => {
   return (
     <div className="h-full flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
       <div>{t("editor.Thistypeisnotyetsupportedforapreexamination")}</div>
-      <Button
-        size="sm"
-        variant="secondary"
-        className="h-7 px-3"
-        onClick={() => {
-          if (revokeRef.current) {
-            URL.revokeObjectURL(revokeRef.current);
-            revokeRef.current = null;
-          }
-          setBlobUrl(null);
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          variant="secondary"
+          className="h-7 px-3"
+          onClick={() => {
+            if (revokeRef.current) {
+              URL.revokeObjectURL(revokeRef.current);
+              revokeRef.current = null;
+            }
+            setBlobUrl(null);
 
-          if (content) {
-            const initial = decodeBase64ToUtf8(content);
-            setForceValue(initial);
-          } else {
-            setForceValue("");
-          }
-          setForceText(true);
-        }}
-      >
-        {t("editor.openInEditor", "Open in editor")}
-      </Button>
+            if (content) {
+              const initial = decodeBase64ToUtf8(content);
+              setForceValue(initial);
+            } else {
+              setForceValue("");
+            }
+            setForceText(true);
+          }}
+        >
+          {t("editor.openInEditor", "Open in editor")}
+        </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="h-7 px-3 flex items-center gap-2"
+          onClick={handleDownloadFile}
+        >
+          <FileDown size={12} className="h-3 w-3" />
+          {t("editor.downloadFile", "Download file")}
+        </Button>
+      </div>
     </div>
   );
 };

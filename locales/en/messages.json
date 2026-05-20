@@ -12,11 +12,13 @@
     "saveAll": "Save all",
     "saveAllSuccess": "All changes saved",
     "saveSuccess": "Saved",
-    "save": "Save"
+    "save": "Save",
+    "github": "GitHub"
   },
   "panel": {
     "tree": "OPFS tree",
     "updatedFromDisk": "Updated from disk",
+    "updatedFromDiskFull": "Updated from disk: {{path}}",
     "saved": "Saved",
     "created": "Created",
     "renamed": "Renamed",
@@ -85,5 +87,39 @@
     },
     "autostartWatch": "Start watching automatically",
     "getStarted": "Get started"
+  },
+  "status": {
+    "files": "Files: {{count}}",
+    "opening": "Opening: {{path}}",
+    "saved": "Saved: {{path}}"
+  },
+  "upload": {
+    "files": "Uploading files… {{done}}/{{total}}",
+    "folder": "Uploading the folder… {{done}}/{{total}}"
+  },
+  "error": {
+    "remove": "Failed to remove: {{message}}",
+    "save": "Save failed: {{message}}",
+    "saveAll": "Save all: {{count}} file(s) failed",
+    "openTimeout": "Failed to open: {{path}} (timeout)"
+  },
+  "view": {
+    "table": "Table",
+    "code": "Code",
+    "preview": "Preview",
+    "split": "Split",
+    "tableSettings": "Settings",
+    "filter": "filter",
+    "toggleFilters": "Toggle column filters",
+    "reset": "Reset",
+    "resetSort": "Reset sort and filters",
+    "firstRowHeader": "First row is header",
+    "fontSize": "Font size",
+    "delimiter": "Delimiter",
+    "decimals": "Decimals",
+    "asIs": "as-is",
+    "dateFormat": "Date format",
+    "locale": "Locale",
+    "emptyFilter": "No rows match the current filter"
   }
 }

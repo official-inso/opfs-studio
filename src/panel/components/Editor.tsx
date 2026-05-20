@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import "../monacoSetup";
-import { getTheme } from "../theme";
+import { loadUIState, saveUIState } from "../lib/session-state";
 
 export interface EditorProps {
   path: string | null;
@@ -114,7 +114,6 @@ export const CodeEditor: React.FC<EditorProps> = ({
 
     const editor = monaco.editor.create(hostRef.current, {
       model,
-      theme: getTheme() === "dark" ? "vs-dark" : "vs-light",
       automaticLayout: false,
       minimap: { enabled: true },
       wordWrap: "on",
@@ -135,6 +134,39 @@ export const CodeEditor: React.FC<EditorProps> = ({
       onChange(textForSave);
     });
 
+    // Restore cursor + scroll position for this path
+    if (path) {
+      void loadUIState().then((state) => {
+        const pos = state.cursorByPath?.[path];
+        if (!pos || !editorRef.current) return;
+        editorRef.current.setPosition({
+          lineNumber: pos.line,
+          column: pos.column,
+        });
+        if (typeof pos.scrollTop === "number") {
+          editorRef.current.setScrollTop(pos.scrollTop);
+        }
+        editorRef.current.revealPositionInCenterIfOutsideViewport(
+          { lineNumber: pos.line, column: pos.column },
+          monaco.editor.ScrollType.Immediate,
+        );
+      });
+    }
+
+    const persistCursor = () => {
+      if (!path || !editorRef.current) return;
+      const p = editorRef.current.getPosition();
+      const scrollTop = editorRef.current.getScrollTop();
+      if (!p) return;
+      saveUIState({
+        cursorByPath: {
+          [path]: { line: p.lineNumber, column: p.column, scrollTop },
+        },
+      });
+    };
+    const cursorSub = editor.onDidChangeCursorPosition(persistCursor);
+    const scrollSub = editor.onDidScrollChange(persistCursor);
+
     if (formatOnOpen) {
       setTimeout(() => runFormat(editor), 0);
     }
@@ -152,6 +184,8 @@ export const CodeEditor: React.FC<EditorProps> = ({
 
     return () => {
       sub.dispose();
+      cursorSub.dispose();
+      scrollSub.dispose();
       resizeObs.current?.disconnect();
       editor.dispose();
       model.dispose();

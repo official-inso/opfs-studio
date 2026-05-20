@@ -69,9 +69,7 @@ export const CreateFileDialog: React.FC = () => {
           <Button
             onClick={() => {
               void createFile(path).then(() => setOpen(false));
-              trackEvent("created_file", {
-                path,
-              });
+              trackEvent("created_file");
             }}
             disabled={path.trim().length === 0}
           >
@@ -128,9 +126,7 @@ export const CreateDirDialog: React.FC = () => {
           <Button
             onClick={() => {
               void createDir(path).then(() => setOpen(false));
-              trackEvent("created_folder", {
-                path,
-              });
+              trackEvent("created_folder");
             }}
             disabled={path.trim().length === 0}
           >
@@ -186,10 +182,7 @@ export const RenameDialog: React.FC<{ from: string; onDone?: () => void }> = ({
                 onDone?.();
               });
 
-              trackEvent("renamed", {
-                from,
-                to,
-              });
+              trackEvent("renamed");
             }}
             disabled={to.trim().length === 0 || to === from}
           >
@@ -279,10 +272,7 @@ export const DeleteDialog: React.FC<{
                 onDone?.();
               });
               toast.success(`${t("panel.deleted")}: ${path}`);
-              trackEvent("deleted", {
-                path,
-                recursive: String(isDirectory ? recursive : false),
-              });
+              trackEvent("deleted");
             }}
           >
             {t("modals.Delete", "Delete")}

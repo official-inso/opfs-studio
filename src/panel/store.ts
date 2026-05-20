@@ -7,10 +7,21 @@ import type {
 } from "../shared/messaging";
 import { toast } from "sonner";
 import { abToBase64 } from "@/shared/base64";
+import {
+  detectEol,
+  extOf,
+  fromLF,
+  isTextual,
+  toLF,
+  type EolStyle,
+} from "@/shared/text-utils";
+import { injectContentScript } from "./lib/inject-content-script";
+import { loadUIState, saveUIState } from "./lib/session-state";
+import { ti } from "@/i18n-instance";
 
 export type FileId = string;
 
-export type EolStyle = "lf" | "crlf";
+export type { EolStyle };
 
 export interface TreeNodeBase {
   id: FileId;
@@ -39,6 +50,10 @@ export interface Conflict {
   diskContent: string;
 }
 
+export type StatusValue =
+  | string
+  | { key: string; params?: Record<string, unknown> };
+
 export interface UIState {
   files: OpfsFileMeta[];
   tree: FileTreeNode[];
@@ -54,7 +69,7 @@ export interface UIState {
   loading: boolean;
   setLoading: (l: boolean) => void;
 
-  statusLine: string;
+  statusLine: StatusValue;
   tabId: number | null;
   watching: boolean;
   conflict: Conflict | null;
@@ -80,7 +95,7 @@ export interface UIState {
   setEolForPath: (path: string, eol: EolStyle) => void;
 
   markSaved: (path: string) => void;
-  setStatus: (s: string) => void;
+  setStatus: (s: StatusValue) => void;
   toggleDir: (path: string) => void;
 
   setConflict: (c: Conflict | null) => void;
@@ -97,33 +112,17 @@ export interface UIState {
   savePath: (path: string) => Promise<void>;
   saveAll: () => Promise<void>;
 
-  openInProgressFor: string | null;
-  openWatchdogId: number | null;
-
-  startOpenWatchdog: (path: string, timeoutMs?: number) => void;
-  stopOpenWatchdog: () => void;
-
   send: <T = unknown>(msg: MsgToContent) => Promise<T>;
+
+  hydrateFromSession: () => Promise<void>;
+  _persistedExpanded: Set<string>;
 }
+
+export { isTextual };
 
 function pathParts(path: string): string[] {
   return path.split("/").filter(Boolean);
 }
-function extOf(name: string): string {
-  return (name.split(".").pop() ?? "").toLowerCase();
-}
-function detectEol(text: string): EolStyle {
-  if (/\r\n/.test(text)) return "crlf";
-  return "lf";
-}
-function toLF(text: string): string {
-  return text.replace(/\r\n?/g, "\n");
-}
-function fromLF(textLF: string, eol: EolStyle): string {
-  return eol === "lf" ? textLF : textLF.replace(/\n/g, "\r\n");
-}
-
-type FileWithPath = File & { webkitRelativePath?: string | undefined };
 
 function normalizePath(input: string): string {
   const s = input.replace(/\\/g, "/").replace(/^\.\//, "");
@@ -240,73 +239,6 @@ function findFileNode(nodes: FileTreeNode[], path: string): FileNode | null {
   return null;
 }
 
-export function isTextual(ext: string): boolean {
-  return [
-    // web
-    "ts",
-    "tsx",
-    "js",
-    "jsx",
-    "json",
-    "css",
-    "scss",
-    "less",
-    "md",
-    "markdown",
-    "html",
-    "xml",
-    "svg",
-
-    // конфиги и данные
-    "txt",
-    "csv",
-    "yml",
-    "yaml",
-    "toml",
-    "ini",
-    "conf",
-    "cfg",
-    "env",
-
-    // dev & infra
-    "log",
-    "sql",
-    "dockerfile",
-    "dockerignore",
-    "makefile",
-
-    // языки программирования
-    "py",
-    "pyw", // Python
-    "go", // Go
-    "rs", // Rust
-    "rb", // Ruby
-    "php", // PHP
-    "java", // Java
-    "kt",
-    "kts", // Kotlin
-    "c",
-    "h", // C
-    "cpp",
-    "cc",
-    "cxx",
-    "hpp", // C++
-    "cs", // C#
-    "sh",
-    "bash",
-    "zsh",
-    "fish", // Shell
-    "lua", // Lua
-    "pl",
-    "pm", // Perl
-
-    // misc
-    "r", // R language
-    "swift", // Swift
-    "dart", // Dart
-  ].includes(ext);
-}
-
 export const useUI = create<UIState>((set, get) => ({
   files: [],
   tree: [],
@@ -329,8 +261,8 @@ export const useUI = create<UIState>((set, get) => ({
   conflict: null,
   awaitingConflictFor: null,
   formatOnOpen: true,
-  openInProgressFor: null,
-  openWatchdogId: null,
+
+  _persistedExpanded: new Set<string>(),
 
   setTab: (id) => set({ tabId: id }),
   setWatching: (w) => set({ watching: w }),
@@ -358,41 +290,20 @@ export const useUI = create<UIState>((set, get) => ({
   },
 
   removePath: async (path, recursive = false) => {
-    await get().send({ kind: "remove-path", data: { path, recursive } });
+    const send = get().send;
     try {
-      const res = await get().send<{
-        ok?: boolean;
-        error?: string;
-        path?: string;
-      }>({
+      await send<{ ok?: boolean; error?: string; path?: string }>({
         kind: "remove-path",
         data: { path, recursive },
       });
-
       if (get().currentPath === path) {
         set({ currentPath: null, buffer: "" });
       }
-      await get().send({ kind: "list", data: null });
+      await send({ kind: "list", data: null });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      toast.error(`Failed to remove: ${msg}`);
-      console.error("[ui] remove-path exception:", err);
+      toast.error(ti("error.remove", { message: msg }));
     }
-  },
-
-  startOpenWatchdog: (path, timeoutMs = 2000) => {
-    const prev = get().openWatchdogId;
-    if (prev != null) window.clearTimeout(prev);
-    const id = window.setTimeout(() => {}, timeoutMs);
-    set({ openInProgressFor: path, openWatchdogId: id });
-  },
-
-  stopOpenWatchdog: () => {
-    const id = get().openWatchdogId;
-    if (id != null) {
-      window.clearTimeout(id);
-    }
-    set({ openInProgressFor: null, openWatchdogId: null });
   },
 
   revertPath: (path) => {
@@ -402,72 +313,113 @@ export const useUI = create<UIState>((set, get) => ({
 
   applySnapshot: (snap) => {
     const keep = new Map<string, boolean>();
-    for (const n of get().tree)
-      if (n.isDirectory) keep.set(n.path, n.collapsed);
+    const collectCollapsed = (nodes: FileTreeNode[]): void => {
+      for (const n of nodes) {
+        if (n.isDirectory) {
+          keep.set(n.path, n.collapsed);
+          collectCollapsed(n.children);
+        }
+      }
+    };
+    collectCollapsed(get().tree);
+    // persisted expanded — приоритет над текущим collapsed: если папка
+    // помечена раскрытой ранее, открываем её и в новом дереве.
+    for (const p of get()._persistedExpanded) keep.set(p, false);
     const tree = toTree(snap.files, keep);
     set({
       files: snap.files,
       tree,
-      statusLine: `Files: ${snap.files.filter((f) => !f.isDirectory).length}`,
+      statusLine: {
+        key: "status.files",
+        params: { count: snap.files.filter((f) => !f.isDirectory).length },
+      },
     });
   },
 
   applyWatchEvents: (events) => {
+    if (events.length === 0) return;
     const state = get();
     const cur = state.currentPath;
     const tree = state.tree;
+    let mutated = false;
+    let anyMatched = false;
 
     for (const e of events) {
       if (e.type !== "modified") continue;
       const n = findFileNode(tree, e.meta.path);
       if (!n) continue;
-      if (!n.dirty) n.status = "modified-externally";
-      window.setTimeout(() => {
-        const nn = findFileNode(get().tree, e.meta.path);
-        if (nn && !nn.dirty && nn.status === "modified-externally") {
-          nn.status = "saved";
-          set({ tree: [...get().tree] });
-        }
-      }, 100);
-    }
-
-    if (
-      cur &&
-      events.some((e) => e.type === "modified" && e.meta.path === cur)
-    ) {
-      const node = findFileNode(tree, cur);
-      const currentBuf = get().buffers[cur] ?? "";
-      const diskBuf = get().lastDisk[cur] ?? "";
-      const hasLocalChanges = currentBuf !== diskBuf;
-
-      if (node && hasLocalChanges) {
-        set({ awaitingConflictFor: cur });
-        void state
-          .send({ kind: "read-file", data: { path: cur } })
-          .catch(() => void 0);
-      } else {
-        void state
-          .send({ kind: "read-file", data: { path: cur } })
-          .catch(() => void 0);
+      anyMatched = true;
+      n.size = e.meta.size;
+      n.lastModified = e.meta.lastModified;
+      if (!n.dirty && n.status !== "modified-externally") {
+        n.status = "modified-externally";
+        mutated = true;
       }
     }
 
-    set({ tree: [...tree] });
+    if (mutated) {
+      set({ tree: [...tree] });
+    }
+    void anyMatched;
+
+    if (
+      cur &&
+      events.some(
+        (e) =>
+          (e.type === "modified" || e.type === "added") &&
+          e.meta.path === cur
+      )
+    ) {
+      const currentBuf = get().buffers[cur] ?? "";
+      const diskBuf = get().lastDisk[cur] ?? "";
+      const hasLocalChanges = currentBuf !== diskBuf;
+      if (hasLocalChanges) {
+        set({ awaitingConflictFor: cur });
+      }
+      void state
+        .send({ kind: "read-file", data: { path: cur } })
+        .catch(() => void 0);
+    }
   },
 
   openFile: (path) => {
     const known = get().buffers[path];
+    // Reset buffer/content so previewers don't render stale data from the
+    // previously selected file while read-file is in flight. loading=true
+    // keeps EditorPanel on the Spin view (not on "unsupported") until the
+    // content-script comes back with bytes.
     set({
       currentPath: path,
       conflict: null,
-      statusLine: `Opening: ${path}`,
-      ...(typeof known === "string" ? { buffer: known } : {}),
+      statusLine: { key: "status.opening", params: { path } },
+      buffer: typeof known === "string" ? known : "",
+      content: "",
+      loading: true,
     });
+    saveUIState({ currentPath: path });
+
+    // Safety net: if the content-script never answers (silent failure), drop
+    // the spinner after 5s so the user isn't stuck.
+    const stuckTimer = window.setTimeout(() => {
+      if (useUI.getState().currentPath === path && useUI.getState().loading) {
+        useUI.setState({ loading: false });
+        toast.error(ti("error.openTimeout", { path }));
+      }
+    }, 5000);
 
     void get()
       .send({ kind: "read-file", data: { path } })
-      .catch(() => void 0);
-    get().startOpenWatchdog(path);
+      .catch(() => {
+        window.clearTimeout(stuckTimer);
+        if (useUI.getState().currentPath === path) {
+          useUI.setState({ loading: false });
+        }
+      })
+      .finally(() => {
+        // file-read / file-read-start handlers in App.tsx will clear loading
+        // once data arrives; we still clear the timer here to avoid double-firing.
+        window.clearTimeout(stuckTimer);
+      });
   },
 
   setBuffer: (text) => {
@@ -519,12 +471,9 @@ export const useUI = create<UIState>((set, get) => ({
       node.status = "saved";
     }
 
-    const bufs = get().buffers;
-    const curr = bufs[path];
-    const lastDiskPrev = get().lastDisk[path];
-
+    const curr = get().buffers[path];
     const nextLastDisk =
-      typeof curr === "string" ? curr.replace(/\r\n?/g, "\n") : undefined;
+      typeof curr === "string" ? toLF(curr) : undefined;
 
     set({
       tree,
@@ -532,7 +481,7 @@ export const useUI = create<UIState>((set, get) => ({
         nextLastDisk !== undefined
           ? { ...get().lastDisk, [path]: nextLastDisk }
           : get().lastDisk,
-      statusLine: `Saved: ${path}`,
+      statusLine: { key: "status.saved", params: { path } },
       conflict: null,
     });
   },
@@ -554,7 +503,19 @@ export const useUI = create<UIState>((set, get) => ({
         return n;
       });
 
-    set({ tree: clone(get().tree) });
+    const nextTree = clone(get().tree);
+    const expanded = new Set<string>();
+    const collectExpanded = (nodes: FileTreeNode[]): void => {
+      for (const n of nodes) {
+        if (n.isDirectory) {
+          if (!n.collapsed) expanded.add(n.path);
+          collectExpanded(n.children);
+        }
+      }
+    };
+    collectExpanded(nextTree);
+    set({ tree: nextTree, _persistedExpanded: expanded });
+    saveUIState({ expandedDirs: Array.from(expanded) });
   },
 
   setConflict: (c) => {
@@ -583,7 +544,7 @@ export const useUI = create<UIState>((set, get) => ({
     const list: File[] = Array.from(files);
     let done = 0;
     const total = list.length;
-    const id = toast.loading(`Uploading files… 0/${total}`);
+    const id = toast.loading(ti("upload.files", { done: 0, total }));
 
     const tasks = list.map((f) =>
       lim(async () => {
@@ -600,7 +561,7 @@ export const useUI = create<UIState>((set, get) => ({
           },
         });
         done++;
-        toast.loading(`Uploading files… ${done}/${total}`, { id });
+        toast.loading(ti("upload.files", { done, total }), { id });
       })
     );
 
@@ -617,7 +578,7 @@ export const useUI = create<UIState>((set, get) => ({
     })[];
     let done = 0;
     const total = list.length;
-    const id = toast.loading(`Uploading the folder… 0/${total}`);
+    const id = toast.loading(ti("upload.folder", { done: 0, total }));
 
     const tasks = list.map((f) =>
       lim(async () => {
@@ -634,7 +595,7 @@ export const useUI = create<UIState>((set, get) => ({
           },
         });
         done++;
-        toast.loading(`Uploading the folder… ${done}/${total}`, { id });
+        toast.loading(ti("upload.folder", { done, total }), { id });
       })
     );
 
@@ -644,20 +605,26 @@ export const useUI = create<UIState>((set, get) => ({
   },
 
   savePath: async (path) => {
-    const bufs = get().buffers;
-    const textLF = bufs[path];
-    if (typeof textLF !== "string") {
-      await get().send({ kind: "read-file", data: { path } });
-      return;
+    const send = get().send;
+    try {
+      const bufs = get().buffers;
+      const textLF = bufs[path];
+      if (typeof textLF !== "string") {
+        await send({ kind: "read-file", data: { path } });
+        return;
+      }
+      const eol = get().eolByPath[path] ?? "lf";
+      const content = fromLF(textLF, eol);
+      await send({
+        kind: "write-file",
+        data: { path, content, createIfMissing: true },
+      });
+      get().markSaved(path);
+      await send({ kind: "list", data: null });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(ti("error.save", { message: msg }));
     }
-    const eol = get().eolByPath[path] ?? "lf";
-    const content = eol === "lf" ? textLF : textLF.replace(/\n/g, "\r\n");
-    await get().send({
-      kind: "write-file",
-      data: { path, content, createIfMissing: true },
-    });
-    get().markSaved(path);
-    await get().send({ kind: "list", data: null });
   },
 
   saveAll: async () => {
@@ -667,34 +634,61 @@ export const useUI = create<UIState>((set, get) => ({
         n.isDirectory ? walk(n.children) : n.dirty && dirty.push(n.path);
     };
     walk(get().tree);
-    const bufs = get().buffers;
-    await Promise.all(
+    const send = get().send;
+    const results = await Promise.allSettled(
       dirty.map(async (p) => {
         const txt = get().buffers[p];
-        if (typeof txt !== "string") return; // подстраховка
+        if (typeof txt !== "string") return;
         const eol = get().eolByPath[p] ?? "lf";
-        const payload = eol === "lf" ? txt : txt.replace(/\n/g, "\r\n");
-        await get().send({
+        const payload = fromLF(txt, eol);
+        await send({
           kind: "write-file",
           data: { path: p, content: payload, createIfMissing: true },
         });
         get().markSaved(p);
       })
     );
-    await get().send({ kind: "list", data: null });
+    const failed = results.filter((r) => r.status === "rejected").length;
+    if (failed > 0) {
+      toast.error(ti("error.saveAll", { count: failed }));
+    }
+    await send({ kind: "list", data: null });
   },
 
-  send: <T>(msg: MsgToContent) =>
-    new Promise<T>((resolve, reject) => {
-      const tabId = get().tabId;
-      if (tabId == null) {
-        reject(new Error("Tab not found"));
-        return;
-      }
-      chrome.tabs.sendMessage(tabId, msg, (response) => {
-        const err = chrome.runtime.lastError;
-        if (err) reject(err);
-        else resolve(response as T);
-      });
-    }),
+  hydrateFromSession: async () => {
+    const data = await loadUIState();
+    const expanded = new Set<string>(data.expandedDirs ?? []);
+    set({ _persistedExpanded: expanded });
+    if (data.currentPath) {
+      set({ currentPath: data.currentPath });
+    }
+  },
+
+  send: async <T>(msg: MsgToContent): Promise<T> => {
+    const tabId = get().tabId;
+    if (tabId == null) throw new Error("Tab not found");
+    try {
+      return await sendRaw<T>(tabId, msg);
+    } catch (e) {
+      const m = e instanceof Error ? e.message : String(e);
+      if (!/Receiving end does not exist|message port closed/i.test(m)) throw e;
+      const injected = await injectContentScript(tabId);
+      if (!injected) throw e;
+      await new Promise<void>((r) => setTimeout(r, 150));
+      return await sendRaw<T>(tabId, msg);
+    }
+  },
 }));
+
+function sendRaw<T>(tabId: number, msg: MsgToContent): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    chrome.tabs.sendMessage(tabId, msg, (response) => {
+      const err = chrome.runtime.lastError;
+      if (err) {
+        reject(new Error(err.message ?? "chrome.runtime.lastError"));
+      } else {
+        resolve(response as T);
+      }
+    });
+  });
+}

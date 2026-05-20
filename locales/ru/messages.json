@@ -12,11 +12,13 @@
     "saveAll": "Сохранить всё",
     "saveAllSuccess": "Все изменения сохранены",
     "saveSuccess": "Сохранено",
-    "save": "Сохранить"
+    "save": "Сохранить",
+    "github": "GitHub"
   },
   "panel": {
     "tree": "Дерево OPFS",
     "updatedFromDisk": "Обновлено с диска",
+    "updatedFromDiskFull": "Обновлено с диска: {{path}}",
     "saved": "Сохранено",
     "created": "Создано",
     "renamed": "Переименовано",
@@ -85,5 +87,39 @@
     },
     "autostartWatch": "Автоматически запускать отслеживание",
     "getStarted": "Начать работу"
+  },
+  "status": {
+    "files": "Файлов: {{count}}",
+    "opening": "Открываю: {{path}}",
+    "saved": "Сохранено: {{path}}"
+  },
+  "upload": {
+    "files": "Загрузка файлов… {{done}}/{{total}}",
+    "folder": "Загрузка папки… {{done}}/{{total}}"
+  },
+  "error": {
+    "remove": "Не удалось удалить: {{message}}",
+    "save": "Ошибка сохранения: {{message}}",
+    "saveAll": "Сохранить всё: ошибок — {{count}}",
+    "openTimeout": "Не удалось открыть: {{path}} (тайм-аут)"
+  },
+  "view": {
+    "table": "Таблица",
+    "code": "Код",
+    "preview": "Просмотр",
+    "split": "Сплит",
+    "tableSettings": "Настройки",
+    "filter": "фильтр",
+    "toggleFilters": "Показать фильтры столбцов",
+    "reset": "Сбросить",
+    "resetSort": "Сбросить сортировку и фильтры",
+    "firstRowHeader": "Первая строка — заголовок",
+    "fontSize": "Размер шрифта",
+    "delimiter": "Разделитель",
+    "decimals": "Знаков после запятой",
+    "asIs": "как есть",
+    "dateFormat": "Формат даты",
+    "locale": "Локальный",
+    "emptyFilter": "Нет строк, соответствующих фильтру"
   }
 }

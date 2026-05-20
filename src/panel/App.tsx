@@ -17,31 +17,14 @@ import { setupI18n } from "@/i18n";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { trackPage } from "@/analytics";
+import { extOf, TEXTUAL_EXT } from "@/shared/text-utils";
+import { injectContentScript } from "./lib/inject-content-script";
+import { setI18n as setI18nGlobal } from "@/i18n-instance";
 
-const extOf = (p: string): string => (p.split(".").pop() ?? "").toLowerCase();
-const TEXTUAL_EXT = new Set([
-  "ts",
-  "tsx",
-  "js",
-  "jsx",
-  "json",
-  "css",
-  "md",
-  "markdown",
-  "html",
-  "txt",
-  "xml",
-  "yml",
-  "yaml",
-  "svg",
-  "csv",
-  "sql",
-  "log",
-]);
+type I18nInstance = Awaited<ReturnType<typeof setupI18n>>;
 
 export default function App() {
-  
-  const [i18n, setI18n] = useState<any>(null);
+  const [i18n, setI18n] = useState<I18nInstance | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -49,13 +32,20 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
     setupI18n().then((inst) => {
+      if (!mounted) return;
       setI18n(inst);
+      // also expose to non-React store helpers
+      setI18nGlobal(inst);
       setReady(true);
     });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  if (!ready) return null;
+  if (!ready || !i18n) return null;
 
   return (
     <I18nextProvider i18n={i18n}>
@@ -75,7 +65,7 @@ function AppContent() {
   const setContent = useUI((s) => s.setContent);
   const send = useUI((s) => s.send);
   const watching = useUI((s) => s.watching);
-  const stopOpenWatchdog = useUI((s) => s.stopOpenWatchdog);
+  const tabId = useUI((s) => s.tabId);
   const { t } = useTranslation();
   const [welcomeOpen, setWelcomeOpen] = useState<boolean>(false);
 
@@ -102,9 +92,7 @@ function AppContent() {
     }
 
     if (msg.kind === "file-read") {
-      stopOpenWatchdog();
-
-      const { path, content, bytes } = msg.data as { path: string; content: string, bytes: string };
+      const { path, content, bytes } = msg.data as { path: string; content: string; bytes: string };
       const state = useUI.getState();
       const { awaitingConflictFor, buffers, lastDisk } = state;
 
@@ -123,13 +111,12 @@ function AppContent() {
 
       setContent(bytes);
       state.applyDiskContent(path, content);
-      state.setStatus(`${t("panel.updatedFromDisk")}: ${path}`);
+      state.setStatus({ key: "panel.updatedFromDiskFull", params: { path } });
       useUI.setState({ loading: false });
       return;
     }
 
     if (msg.kind === "bytes-read") {
-      stopOpenWatchdog();
       return;
     }
 
@@ -145,8 +132,8 @@ function AppContent() {
       const { path } = msg.data as { path: string };
       const st = useUI.getState();
       const hasBuf = Object.prototype.hasOwnProperty.call(st.buffers, path);
-      const isTextual = TEXTUAL_EXT.has(extOf(path));
-      if (hasBuf && isTextual) {
+      const isTextualFile = TEXTUAL_EXT.has(extOf(path));
+      if (hasBuf && isTextualFile) {
         st.markSaved(path);
       }
       toast.success(`${t("panel.saved")}: ${path}`);
@@ -167,7 +154,7 @@ function AppContent() {
     }
 
     if (msg.kind === "ready") {
-      setStatus(t("panel.ready"));
+      setStatus({ key: "panel.ready" });
       setTab(null);
       setTimeout(() => {
         window.location.reload();
@@ -176,7 +163,6 @@ function AppContent() {
     }
 
     if (msg.kind === "error") {
-      stopOpenWatchdog();
       toast.error((msg.data as { message: string }).message);
       return;
     }
@@ -196,6 +182,7 @@ function AppContent() {
   });
 
   useEffect(() => {
+    void useUI.getState().hydrateFromSession();
     const devtoolsTabId =
       (
         chrome as unknown as {
@@ -207,22 +194,45 @@ function AppContent() {
       return;
     }
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const t = tabs[0];
-      if (t?.id != null) setTab(t.id);
+      const tab = tabs[0];
+      if (tab?.id != null) setTab(tab.id);
     });
   }, [setTab]);
 
   useEffect(() => {
+    if (tabId == null) return;
+    let cancelled = false;
+    void (async () => {
+      await injectContentScript(tabId);
+      if (cancelled) return;
+      await send({ kind: "list", data: null }).catch(() => void 0);
+      if (cancelled) return;
+      if (useUI.getState().watching) {
+        await send({ kind: "start-watch", data: null }).catch(() => void 0);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [tabId, send]);
+
+  useEffect(() => {
     const resync = () => {
+      if (useUI.getState().tabId == null) return;
       void send({ kind: "list", data: null }).catch(() => void 0);
-      if (watching)
+      if (useUI.getState().watching)
         void send({ kind: "start-watch", data: null }).catch(() => void 0);
     };
-    window.addEventListener("focus", resync);
-    document.addEventListener("visibilitychange", () => {
+    const onVisibility = () => {
       if (document.visibilityState === "visible") resync();
-    });
-  }, [send, watching]);
+    };
+    window.addEventListener("focus", resync);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", resync);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [send]);
 
   return (
     <TooltipProvider>

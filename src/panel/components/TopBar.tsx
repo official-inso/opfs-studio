@@ -9,6 +9,7 @@ import {
   UploadCloud,
   Wand2,
   Palette,
+  Github,
 } from "lucide-react";
 import { useUI } from "../store";
 import { CreateFileDialog, CreateDirDialog } from "./Modals";
@@ -43,14 +44,18 @@ export const TopBar: React.FC = () => {
 
   const { t } = useTranslation();
 
-  useEffect(() => {
-    const theme = localStorage.getItem("theme");
-    if (theme) setTheme(theme as "light" | "dark");
-  }, [setTheme])
+  // Theme is applied once in src/panel/index.tsx at boot.
+  // Subsequent toggles call setTheme() directly from the Palette button.
 
   return (
     <div className="border-b bg-background">
       <div className="h-10 px-2 flex items-center gap-1">
+        <img
+          src="/logo.svg"
+          alt="OPFS Studio"
+          className="h-5 w-5 mr-1 select-none"
+          draggable={false}
+        />
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -58,7 +63,18 @@ export const TopBar: React.FC = () => {
               size="icon"
               className="h-6 w-6"
               onClick={() => {
-                window.location.reload();
+                const tabId = useUI.getState().tabId;
+                if (tabId != null) {
+                  chrome.tabs.reload(tabId).catch(() => void 0);
+                  // After reload the content-script needs a moment to (re)inject
+                  // itself via the manifest. Probe a list shortly after.
+                  window.setTimeout(() => {
+                    void send({ kind: "list", data: null }).catch(() => void 0);
+                    if (useUI.getState().watching) {
+                      void send({ kind: "start-watch", data: null }).catch(() => void 0);
+                    }
+                  }, 700);
+                }
                 trackEvent("refresh");
               }}
             >
@@ -220,6 +236,37 @@ export const TopBar: React.FC = () => {
         </Button> */}
 
         <div className="ml-auto flex items-center gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => {
+                  const url = new URL("https://9op.ru/000B");
+                  const version =
+                    chrome.runtime.getManifest?.()?.version ?? "unknown";
+                  const surface =
+                    (chrome as unknown as { devtools?: unknown }).devtools
+                      ? "devtools"
+                      : "sidepanel";
+                  url.searchParams.set("utm_source", "opfs-studio");
+                  url.searchParams.set("utm_medium", "chrome-extension");
+                  url.searchParams.set("utm_campaign", "in-app-github");
+                  url.searchParams.set("utm_content", "topbar-button");
+                  url.searchParams.set("utm_term", surface);
+                  url.searchParams.set("ext_version", version);
+                  chrome.tabs.create({ url: url.toString() });
+                  trackEvent("github_click");
+                }}
+              >
+                <Github className="!h-3 !w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t("topbar.github", "GitHub")}</p>
+            </TooltipContent>
+          </Tooltip>
           <DonateButton />
           <Button
             size="sm"
