@@ -62,14 +62,19 @@ release:tag-and-publish:
     #    (enabled once CWS_* CI variables are configured — Block 3)
     - |
       if [ -n "${CWS_EXTENSION_ID:-}" ] && [ -n "${CWS_REFRESH_TOKEN:-}" ]; then
-        # chrome-webstore-upload-cli reads credentials from env vars
-        # (the --client-id/--client-secret/--refresh-token flags were removed).
-        export EXTENSION_ID="$CWS_EXTENSION_ID"
-        export CLIENT_ID="$CWS_CLIENT_ID"
-        export CLIENT_SECRET="$CWS_CLIENT_SECRET"
-        export REFRESH_TOKEN="$CWS_REFRESH_TOKEN"
-        npx chrome-webstore-upload upload --source builds/opfs-studio-chrome.zip --extension-id "$CWS_EXTENSION_ID"
-        npx chrome-webstore-upload publish --extension-id "$CWS_EXTENSION_ID"
+        # Pin CLI to v3 (classic Chrome Web Store API). v4 requires a publisherId
+        # (new API); our OAuth refresh token is scoped to the classic items API.
+        npx chrome-webstore-upload-cli@3 upload \
+          --source builds/opfs-studio-chrome.zip \
+          --extension-id "$CWS_EXTENSION_ID" \
+          --client-id "$CWS_CLIENT_ID" \
+          --client-secret "$CWS_CLIENT_SECRET" \
+          --refresh-token "$CWS_REFRESH_TOKEN"
+        npx chrome-webstore-upload-cli@3 publish \
+          --extension-id "$CWS_EXTENSION_ID" \
+          --client-id "$CWS_CLIENT_ID" \
+          --client-secret "$CWS_CLIENT_SECRET" \
+          --refresh-token "$CWS_REFRESH_TOKEN"
       else
         echo "CWS_* variables not set — skipping Chrome Web Store publish (build artifact still produced)."
       fi
