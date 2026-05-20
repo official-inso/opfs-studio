@@ -25,3 +25,8 @@ export function base64ToUint8Local(b64: string): Uint8Array {
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }
+
+export function base64ToBlob(b64: string, type = "application/octet-stream"): Blob {
+  const bytes = base64ToUint8Local(b64);
+  return new Blob([bytes.buffer as ArrayBuffer], { type });
+}

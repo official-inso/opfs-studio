@@ -97,9 +97,9 @@ export async function setupI18n(): Promise<typeof i18n> {
     }
   }
 
-  // Переопределяем changeLanguage
+  // Переопределяем changeLanguage: динамическая подгрузка бандла + нормализация языка
   const origChange = i18n.changeLanguage.bind(i18n);
-  i18n.changeLanguage = (async (lng?: string) => {
+  const wrapped: typeof i18n.changeLanguage = async (lng?: string) => {
     let next: string = "en";
     if (!lng) {
       next = "en";
@@ -119,7 +119,8 @@ export async function setupI18n(): Promise<typeof i18n> {
     await ensureLng(next);
     await setStoredLang(next);
     return origChange(next);
-  }) as any;
+  };
+  i18n.changeLanguage = wrapped;
 
   return i18n;
 }
