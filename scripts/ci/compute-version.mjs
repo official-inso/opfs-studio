@@ -6,11 +6,12 @@
 //   - "BREAKING CHANGE" in body, or "type!:" in subject → major
 //   - any "feat:" → minor
 //   - any "fix:" / "perf:" / "refactor:" → patch
-//   - otherwise → patch (there are commits, so we still ship)
+//   - only non-releasable commits (chore/ci/docs/style/test/build) → nothing
+//     to release (exit 3), so service commits don't trigger a publish
 //
 // Exit codes:
 //   0 — printed a version
-//   3 — no commits since the last tag (nothing to release)
+//   3 — no releasable commits since the last tag (nothing to release)
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -63,7 +64,8 @@ if (commits.length === 0) {
   process.exit(3);
 }
 
-let bump = "patch";
+// null = nothing releasable seen yet. Precedence: major > minor > patch.
+let bump = null;
 for (const c of commits) {
   const subject = c.split("\n")[0] ?? "";
   const isBreaking =
@@ -72,7 +74,20 @@ for (const c of commits) {
     bump = "major";
     break;
   }
-  if (/^feat(\([^)]*\))?:/.test(subject)) bump = "minor";
+  if (/^feat(\([^)]*\))?:/.test(subject)) {
+    bump = "minor";
+    continue;
+  }
+  if (/^(fix|perf|refactor)(\([^)]*\))?:/.test(subject) && bump !== "minor") {
+    bump = "patch";
+  }
+}
+
+if (!bump) {
+  process.stderr.write(
+    "only non-releasable commits since last tag — nothing to release\n"
+  );
+  process.exit(3);
 }
 
 const [maj, min, pat] = baseVersion(tag)
