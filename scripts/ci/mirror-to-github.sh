@@ -6,6 +6,7 @@
 # Optional environment:
 #   MIRROR_GH_REPO   — defaults to "official-inso/opfs-studio"
 #   MIRROR_BRANCH    — defaults to "main"
+#   PUSH_TAGS        — if "1", also push all tags (used by the release job)
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
@@ -13,6 +14,7 @@ cd "$(git rev-parse --show-toplevel)"
 : "${MIRROR_SSH_KEY:?MIRROR_SSH_KEY required (GitLab File-type CI variable with the deploy key)}"
 : "${MIRROR_GH_REPO:=official-inso/opfs-studio}"
 : "${MIRROR_BRANCH:=main}"
+: "${PUSH_TAGS:=0}"
 
 # Hygiene check first — any failure here aborts the mirror.
 bash scripts/ci/check-no-leak.sh
@@ -43,5 +45,8 @@ else
 fi
 
 git push github "HEAD:${MIRROR_BRANCH}"
+if [ "$PUSH_TAGS" = "1" ]; then
+  git push github --tags
+fi
 
 echo "✅ mirrored ${CI_COMMIT_SHA:-HEAD} → github.com/${MIRROR_GH_REPO}@${MIRROR_BRANCH}"

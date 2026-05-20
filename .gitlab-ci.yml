@@ -1,5 +1,6 @@
 stages:
   - verify
+  - release
   - publish
 
 # ─── verify ──────────────────────────────────────────────────────────────────
@@ -19,6 +20,73 @@ verify:typecheck-build:
     - npm ci --no-audit --no-fund
     - npx tsc --noEmit
     - npm run build:chrome
+
+# ─── release ───────────────────────────────────────────────────────────────
+# On push to `master`: derive the next version from conventional commits, bump
+# package.json + manifests, build + zip, publish to the Chrome Web Store, then
+# commit the bump + tag and push both to GitLab and GitHub (tags included).
+# The release commit carries [skip ci] to avoid re-triggering the pipeline.
+
+release:tag-and-publish:
+  stage: release
+  image: node:20-alpine
+  tags: [docker]
+  needs:
+    - job: verify:typecheck-build
+      optional: false
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: on_success
+  variables:
+    GIT_DEPTH: 0
+  before_script:
+    - apk add --no-cache git bash openssh-client
+  script:
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    # 1. Compute next version (exit 3 = nothing to release → skip gracefully)
+    - |
+      set +e
+      VERSION="$(node scripts/ci/compute-version.mjs)"
+      RC=$?
+      set -e
+      if [ "$RC" = "3" ]; then echo "Nothing to release."; exit 0; fi
+      if [ "$RC" != "0" ]; then echo "compute-version failed ($RC)"; exit "$RC"; fi
+      echo "Releasing v$VERSION"
+    - node scripts/ci/apply-version.mjs "$VERSION"
+    # 2. Build the Chrome package
+    - npm ci --no-audit --no-fund
+    - npm run build:chrome
+    - npm run zip:chrome
+    # 3. Publish to the Chrome Web Store
+    #    (enabled once CWS_* CI variables are configured — Block 3)
+    - |
+      if [ -n "${CWS_EXTENSION_ID:-}" ] && [ -n "${CWS_REFRESH_TOKEN:-}" ]; then
+        npx chrome-webstore-upload upload \
+          --source builds/opfs-studio-chrome.zip \
+          --extension-id "$CWS_EXTENSION_ID" \
+          --client-id "$CWS_CLIENT_ID" \
+          --client-secret "$CWS_CLIENT_SECRET" \
+          --refresh-token "$CWS_REFRESH_TOKEN"
+        npx chrome-webstore-upload publish \
+          --extension-id "$CWS_EXTENSION_ID" \
+          --client-id "$CWS_CLIENT_ID" \
+          --client-secret "$CWS_CLIENT_SECRET" \
+          --refresh-token "$CWS_REFRESH_TOKEN"
+      else
+        echo "CWS_* variables not set — skipping Chrome Web Store publish (build artifact still produced)."
+      fi
+    # 4. Commit bump + tag, push to GitLab master (no CI loop) and GitHub
+    - git config user.email "ci@opfs-studio.local"
+    - git config user.name  "opfs-release"
+    - git add package.json manifests/manifest.chrome.json manifests/manifest.edge.json manifests/manifest.firefox.json
+    - git commit -m "chore: release v$VERSION [skip ci]"
+    - git tag "v$VERSION"
+    - git push "https://oauth2:${GITLAB_RELEASE_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:master" --tags
+    - MIRROR_BRANCH=master PUSH_TAGS=1 bash scripts/ci/mirror-to-github.sh
+  artifacts:
+    paths:
+      - builds/opfs-studio-chrome.zip
+    expire_in: 30 days
 
 # ─── publish ─────────────────────────────────────────────────────────────────
 # Mirror main → github.com/official-inso/opfs-studio after a successful verify.
