@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OPFS Studio · Example</title>
+    <script type="module" crossorigin src="/opfs-studio/demo/assets/index-BGVv0IV7.js"></script>
+    <link rel="stylesheet" crossorigin href="/opfs-studio/demo/assets/index-Bwt7TqHw.css">
+  </head>
+  <body>
+    <header>
+      <h1>OPFS Studio · Example</h1>
+      <p class="sub">
+        Buttons below write into the page's OPFS. Open the OPFS Studio
+        extension on this page (popup → Side Panel, or DevTools → OPFS Studio)
+        to watch the tree update live.
+      </p>
+      <div class="header-actions">
+        <button id="clear-opfs" class="danger">Wipe OPFS root</button>
+        <button id="refresh-list" class="ghost">List root</button>
+      </div>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab" data-tab="simple" role="tab">Simple</button>
+        <button class="tab" data-tab="advanced" role="tab">Advanced</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="tab-simple" class="tab-pane">
+        <p class="pane-intro">
+          Quick scenarios — each card writes one file (or a whole tree).
+          Pick whatever you want to see in OPFS Studio.
+        </p>
+        <div id="simple-grid" class="preset-grid"></div>
+      </section>
+
+      <section id="tab-advanced" class="tab-pane" hidden>
+        <p class="pane-intro">
+          Engineering playground. Every button maps to a specific OPFS API call.
+        </p>
+
+        <details open>
+          <summary>1. Storage quota</summary>
+          <div class="row">
+            <button data-act="quota:estimate">estimate()</button>
+            <button data-act="quota:persist">persist()</button>
+            <button data-act="quota:persisted">persisted()</button>
+          </div>
+        </details>
+
+        <details>
+          <summary>2. Directory operations</summary>
+          <div class="row">
+            <label>name <input id="dir-name" value="my-dir" /></label>
+            <button data-act="dir:create">getDirectoryHandle({create:true})</button>
+            <button data-act="dir:remove">removeEntry(recursive:true)</button>
+          </div>
+          <div class="row">
+            <button data-act="dir:entries">async iter entries()</button>
+            <button data-act="dir:keys">keys()</button>
+            <button data-act="dir:values">values()</button>
+            <button data-act="dir:resolve">resolve()</button>
+          </div>
+        </details>
+
+        <details>
+          <summary>3. File operations</summary>
+          <div class="row">
+            <label>name <input id="file-name" value="hello.txt" /></label>
+            <label>content <input id="file-content" value="hi" /></label>
+            <button data-act="file:create">create + write</button>
+            <button data-act="file:read-text">read text</button>
+            <button data-act="file:read-binary">read binary</button>
+            <button data-act="file:delete">removeEntry()</button>
+          </div>
+          <div class="row">
+            <label>from <input id="move-from" value="hello.txt" /></label>
+            <label>to <input id="move-to" value="hello-renamed.txt" /></label>
+            <button data-act="file:move">move() with fallback</button>
+          </div>
+        </details>
+
+        <details>
+          <summary>4. Writable stream (advanced)</summary>
+          <div class="row">
+            <label>file <input id="write-file" value="stream.txt" /></label>
+            <button data-act="write:sequential">3× write(string)</button>
+            <button data-act="write:seek">seek + write</button>
+            <button data-act="write:truncate">truncate(5)</button>
+            <button data-act="write:params">write(WriteParams)</button>
+            <button data-act="write:blob">write(Blob)</button>
+            <button data-act="write:buffer">write(Uint8Array)</button>
+          </div>
+        </details>
+
+        <details>
+          <summary>5. Sync access handle (Worker)</summary>
+          <div class="row">
+            <button data-act="sync:spawn">spawn worker</button>
+            <button data-act="sync:write">sync write</button>
+            <button data-act="sync:read">sync read</button>
+            <button data-act="sync:size">getSize()</button>
+            <button data-act="sync:truncate">truncate(4)</button>
+            <button data-act="sync:close">close()</button>
+          </div>
+        </details>
+
+        <details>
+          <summary>6. Nested directories</summary>
+          <div class="row">
+            <button data-act="nested:create">create a/b/c/d.txt</button>
+            <button data-act="nested:walk">walk &amp; log</button>
+            <button data-act="nested:remove">remove root recursive</button>
+          </div>
+        </details>
+
+        <details>
+          <summary>7. Stress test</summary>
+          <div class="row">
+            <label>files <input id="stress-count" value="100" type="number" min="1" max="2000" /></label>
+            <button data-act="stress:create">create N files</button>
+            <button data-act="stress:fill">fill until quota</button>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <aside id="log-panel">
+      <div class="log-header">
+        <span>Log</span>
+        <button id="clear-log" class="ghost">clear</button>
+      </div>
+      <ol id="log"></ol>
+    </aside>
+
+  </body>
+</html>
