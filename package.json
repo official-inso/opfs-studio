@@ -22,6 +22,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@inso_web/els-client": "^0.4.2",
+    "@inso_web/els-react": "^0.4.2",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-context-menu": "^2.2.16",
     "@radix-ui/react-dialog": "^1.1.15",

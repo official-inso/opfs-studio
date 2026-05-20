@@ -28,6 +28,8 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Build Chrome package
+        env:
+          ELS_API_KEY: ${{ secrets.ELS_API_KEY }}
         run: |
           npm run build:chrome
           npm run zip:chrome

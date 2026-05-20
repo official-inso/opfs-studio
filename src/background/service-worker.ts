@@ -1,5 +1,15 @@
 import type { MsgFromContent } from "../shared/messaging";
 import { trackPage } from "@/analytics";
+import { elsError } from "@/els/client";
+
+// Report uncaught errors / rejected promises in the service worker to ELS
+// (no-op when ELS is disabled; fire-and-forget).
+self.addEventListener("error", (e) => {
+  elsError(e.error ?? e.message, "service-worker");
+});
+self.addEventListener("unhandledrejection", (e) => {
+  elsError(e.reason, "service-worker");
+});
 
 interface PanelPort extends chrome.runtime.Port {
   isDevtools: boolean;

@@ -37,6 +37,17 @@ pings contain **no file paths, no file contents, and no personal data** — only
 the event name and a small set of whitelisted non-sensitive parameters
 (such as the UI language or theme).
 
+### Error & diagnostic logging
+
+The extension also sends **anonymous error reports and diagnostic events**
+(uncaught errors, stacktraces, and the same whitelisted product events as above)
+to our own logging service (ELS, operated by INSO). This is used solely to keep
+the extension stable and to improve it. These reports contain **no file paths,
+no file contents, no typed text and no personal data** — only error/stacktrace
+information (code-level), the event name and a small set of whitelisted
+non-sensitive parameters (such as UI language or theme). We do **not** sell or
+share this data, and it is used only to operate and improve the extension.
+
 ### Permissions
 
 - `storage` — save UI preferences locally.
@@ -81,6 +92,18 @@ Questions about this policy: open an issue at
 файлов и персональных данных** — только имя события и небольшой набор
 нечувствительных параметров из белого списка (например, язык или тема
 интерфейса).
+
+### Логирование ошибок и диагностика
+
+Расширение также отправляет **анонимные отчёты об ошибках и диагностические
+события** (необработанные ошибки, стектрейсы и те же события из белого списка,
+что и выше) в наш собственный сервис логирования (ELS, оператор — INSO).
+Это нужно исключительно для стабильности и улучшения расширения. Эти отчёты
+**не содержат путей к файлам, содержимого файлов, введённого текста и
+персональных данных** — только информацию об ошибке/стектрейсе (на уровне кода),
+имя события и небольшой набор нечувствительных параметров из белого списка
+(например, язык или тема интерфейса). Мы **не** продаём и не передаём эти данные;
+они используются только для работы и улучшения расширения.
 
 ### Разрешения
 

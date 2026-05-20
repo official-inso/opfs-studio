@@ -53,7 +53,8 @@ release:tag-and-publish:
       if [ "$RC" != "0" ]; then echo "compute-version failed ($RC)"; exit "$RC"; fi
       echo "Releasing v$VERSION"
     - node scripts/ci/apply-version.mjs "$VERSION"
-    # 2. Build the Chrome package
+    # 2. Build the Chrome package (ELS_API_KEY injected from a protected CI
+    #    variable; absent → ELS disabled at runtime, build still succeeds)
     - npm ci --no-audit --no-fund
     - npm run build:chrome
     - npm run zip:chrome

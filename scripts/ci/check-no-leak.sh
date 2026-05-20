@@ -15,7 +15,6 @@ FILE_PATTERNS_I=(
   "generated with claude"
   "co[- ]authored[- ]by:[[:space:]]*claude"
   "gitlab\\.dev\\.insoweb\\.ru"
-  "\\.insoweb\\.ru"
   "ssh inso1"
   "ssh inso2"
 )
@@ -74,6 +73,18 @@ for p in "${FILE_PATTERNS_CLAUDE[@]}"; do
     violations=$((violations + 1))
   fi
 done
+
+# Block any *.insoweb.ru host EXCEPT the public ELS ingest endpoint
+# `api.insoweb.ru` (the telemetry endpoint is intentionally hard-coded). We strip
+# the allowed host token from each line, then flag any remaining .insoweb.ru.
+if remaining=$(git grep -nIE -i "\\.insoweb\\.ru" -- "${EXCLUDES[@]}" 2>/dev/null \
+    | sed 's/api\.insoweb\.ru//gI' | grep -iE "\\.insoweb\\.ru" || true); then
+  if [[ -n "$remaining" ]]; then
+    echo "✗ pattern: .insoweb.ru (non-allowlisted host)"
+    echo "$remaining" | sed 's/^/  /'
+    violations=$((violations + 1))
+  fi
+fi
 
 echo "→ scanning last 100 commit messages…"
 LOG=$(git log -n 100 --pretty=format:"%H %s%n%b" 2>/dev/null || true)

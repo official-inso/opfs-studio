@@ -1,3 +1,5 @@
+import { elsEvent } from "./els/client";
+
 const METRIKA_ID = "103954503";
 
 /**
@@ -18,6 +20,8 @@ const PARAM_WHITELIST = new Set<string>([
 export function trackPage(path: string): void {
   const url = buildUrl(path);
   sendPixel(url);
+  // Mirror to ELS (no-op when disabled). `path` is a fixed code string.
+  elsEvent(path);
 }
 
 /**
@@ -29,16 +33,21 @@ export function trackEvent(
   params?: Record<string, string>
 ): void {
   const safe = new URLSearchParams({ event: name });
+  const safeParams: Record<string, string> = {};
   if (params) {
     for (const [k, v] of Object.entries(params)) {
       if (!PARAM_WHITELIST.has(k)) continue;
       if (typeof v !== "string") continue;
       // Cap value length so even allowed params can't carry payloads.
-      safe.set(k, v.slice(0, 64));
+      const capped = v.slice(0, 64);
+      safe.set(k, capped);
+      safeParams[k] = capped;
     }
   }
   const url = buildUrl(`event/${name}?${safe.toString()}`);
   sendPixel(url);
+  // Mirror to ELS (no-op when disabled) — only the same whitelisted params.
+  elsEvent(name, safeParams);
 }
 
 function buildUrl(path: string): string {
