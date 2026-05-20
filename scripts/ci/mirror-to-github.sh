@@ -44,7 +44,7 @@ else
   git remote add github "$REMOTE_URL"
 fi
 
-git push github "HEAD:${MIRROR_BRANCH}"
+git push github "HEAD:refs/heads/${MIRROR_BRANCH}"
 if [ "$PUSH_TAGS" = "1" ]; then
   git push github --tags
 fi
